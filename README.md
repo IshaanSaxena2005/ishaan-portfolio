@@ -9,10 +9,10 @@ A modern, responsive personal portfolio website showcasing my projects, skills, 
 ### Homepage
 ![Homepage](screenshots/homepage.png) 
 
-### Skills
+### Skills Section
 ![Skills](screenshots/skills.png) 
 
-### Projects
+### Projects Section
 ![Projects](screenshots/projects.png) 
 
 ---
