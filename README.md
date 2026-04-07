@@ -19,7 +19,7 @@ A modern, responsive personal portfolio website showcasing my projects, skills, 
 
 ## 🌐 Live Demo
 
-👉 [https://ishaansaxena2005.github.io/ishaan-portfolio/](https://ishaansaxena2005.github.io/ishaan-portfolio/)
+👉 https://ishaansaxena-portfolio.onrender.com/
 
 ---
 
