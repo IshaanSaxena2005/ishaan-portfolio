@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/typed.js@2.0.15/dist/typed.umd.js"></script>
+    <!-- Vanilla Tilt for 3D interactions -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+  </head>
+  <body>
+    <!-- Advanced Design Backgrounds -->
+    <div class="background-aurora"></div>
+    <div class="cursor-glow"></div>
+    <div id="particles-js"></div>
+
+    <header class="header">
+      <a href="#" class="logo">My Portfolio</a>
+      <nav class="navbar">
+        <a href="#home" style="--i: 1" class="active">Home</a>
+        <a href="#about" style="--i: 2">About Me</a>
+        <a href="#skills" style="--i: 3">Skills</a>
+        <a href="#projects" style="--i: 4">Projects</a>
+        <a href="#experience" style="--i: 5">Experience</a>
+        <a href="#certifications" style="--i: 6">Certifications</a>
+        <a href="#education" style="--i: 7">Education</a>
+        <a href="#contact" style="--i: 8">Contact Me</a>
+      </nav>
+    </header>
+
+    <section class="home reveal" id="home">
+      <div class="home-content">
+        <h3>Hello, It's Me</h3>
+        <h1>Ishaan Saxena</h1>
+        <h3>And I'm a <span class="text"></span></h3>
+        <p>
+          Computer Science student specializing in Big Data Analytics at SRMIST with hands-on experience in software development, data analytics, and AI-driven projects. 
+          Skilled in Python, C/C++, JavaScript, Power BI, and data visualization, with experience building full-stack applications, analytical dashboards, and data-driven solutions through hackathons, research, and practical projects. 
+          Currently seeking internship opportunities to apply and expand my technical and analytical expertise.
+        </p>
+        <div class="home-sci">
+          <a href="https://www.linkedin.com/in/ishaan-saxena2005/" style="--i: 8">
+            <i class="bx bxl-linkedin"></i>
+          </a>
+          <a href="https://github.com/IshaanSaxena2005" style="--i: 9">
+            <i class="bx bxl-github"></i>
+          </a>
+          <a href="https://www.instagram.com/ishaan_saxena5/" style="--i: 10">
+            <i class="bx bxl-instagram"></i>
+          </a>
+        </div>
+      </div>
+      <div class="home-photo tilt-card">
+        <img src="My-photo.png" alt="My Photo" class="profile-pic" />
+      </div>
+    </section>
+
+    <section class="about reveal" id="about">
+      <div class="about-img tilt-card">
+        <img src="My-photo.png" alt="My Photo" class="About-photo" />
+      </div>
+      <div class="about-text">
+        <h2>About <span>Me</span></h2>
+        <p>
+          I am a second-year B.Tech Computer Science student (Big Data
+          Analytics) at SRM Kattankulathur with a strong interest in web
+          development and product-based engineering.<br />
+          I have experience building responsive frontend applications using
+          HTML, CSS, JavaScript, and I focus on writing clean, structured, and
+          maintainable code. I enjoy turning ideas into usable web products and
+          continuously enhancing them through better design, performance, and
+          functionality.<br />
+          I am actively working toward becoming a full-stack developer and aim
+          to gain internship experience where I can collaborate with teams,
+          learn industry practices, and build impactful software solutions.
+        </p>
+        <a href="My Latest Resume.pdf" class="btn-box" target="_blank">More About Me</a>
+      </div>
+    </section>
+
+    <!-- NEW PREMIUM SKILLS SECTION -->
+    <section class="skills-section reveal" id="skills">
+      <h1 class="sub-title">My <span>Skills</span></h1>
+      <div class="skills-container">
+        <!-- Card 1: Programming -->
+        <div class="skill-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+          <div class="card-header">
+            <i class='bx bx-code-alt'></i>
+            <h2>Programming</h2>
+          </div>
+          <div class="skill-list">
+            <div class="skill-item">
+              <div class="skill-info"><span>Python</span><span>80%</span></div>
+              <div class="progress-bar"><div class="progress p-80"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>Java</span><span>65%</span></div>
+              <div class="progress-bar"><div class="progress p-65"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>C/C++</span><span>80%</span></div>
+              <div class="progress-bar"><div class="progress p-80"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>JavaScript</span><span>85%</span></div>
+              <div class="progress-bar"><div class="progress p-85"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>SQL</span><span>90%</span></div>
+              <div class="progress-bar"><div class="progress p-90"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Web Development -->
+        <div class="skill-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+          <div class="card-header">
+            <i class='bx bx-laptop'></i>
+            <h2>Web Development</h2>
+          </div>
+          <div class="skill-list">
+            <div class="skill-item">
+              <div class="skill-info"><span>HTML/CSS</span><span>95%</span></div>
+              <div class="progress-bar"><div class="progress p-95"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>React</span><span>70%</span></div>
+              <div class="progress-bar"><div class="progress p-70"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>Node.js</span><span>80%</span></div>
+              <div class="progress-bar"><div class="progress p-80"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>Express.js</span><span>65%</span></div>
+              <div class="progress-bar"><div class="progress p-65"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>Flask</span><span>75%</span></div>
+              <div class="progress-bar"><div class="progress p-75"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Data Analytics -->
+        <div class="skill-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+          <div class="card-header">
+            <i class='bx bx-bar-chart-alt-2'></i>
+            <h2>Data Analytics</h2>
+          </div>
+          <div class="skill-list">
+            <div class="skill-item">
+              <div class="skill-info"><span>Pandas</span><span>90%</span></div>
+              <div class="progress-bar"><div class="progress p-90"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>NumPy</span><span>85%</span></div>
+              <div class="progress-bar"><div class="progress p-85"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>Power BI</span><span>80%</span></div>
+              <div class="progress-bar"><div class="progress p-80"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>Matplotlib</span><span>85%</span></div>
+              <div class="progress-bar"><div class="progress p-85"></div></div>
+            </div>
+            <div class="skill-item">
+              <div class="skill-info"><span>Seaborn</span><span>85%</span></div>
+              <div class="progress-bar"><div class="progress p-85"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Professional Skills -->
+        <div class="skill-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+          <div class="card-header">
+            <i class='bx bx-briefcase'></i>
+            <h2>Professional Skills</h2>
+          </div>
+          <div class="radial-bars">
+            <div class="radial-bar">
+              <svg viewBox="0 0 200 200">
+                <circle class="progress-bar-circle" cx="100" cy="100" r="80"></circle>
+                <circle class="path path-1" cx="100" cy="100" r="80"></circle>
+              </svg>
+              <div class="percentage">90%</div>
+              <div class="text">Creativity</div>
+            </div>
+            <div class="radial-bar">
+              <svg viewBox="0 0 200 200">
+                <circle class="progress-bar-circle" cx="100" cy="100" r="80"></circle>
+                <circle class="path path-2" cx="100" cy="100" r="80"></circle>
+              </svg>
+              <div class="percentage">70%</div>
+              <div class="text">Communication</div>
+            </div>
+            <div class="radial-bar">
+              <svg viewBox="0 0 200 200">
+                <circle class="progress-bar-circle" cx="100" cy="100" r="80"></circle>
+                <circle class="path path-3" cx="100" cy="100" r="80"></circle>
+              </svg>
+              <div class="percentage">80%</div>
+              <div class="text">Problem Solving</div>
+            </div>
+            <div class="radial-bar">
+              <svg viewBox="0 0 200 200">
+                <circle class="progress-bar-circle" cx="100" cy="100" r="80"></circle>
+                <circle class="path path-4" cx="100" cy="100" r="80"></circle>
+              </svg>
+              <div class="percentage">95%</div>
+              <div class="text">Teamwork</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW PREMIUM PROJECTS SECTION -->
+    <section class="projects reveal" id="projects">
+      <h1 class="sub-title">My <span>Projects</span></h1>
+      <div class="projects-container">
+        
+        <!-- Project 1 -->
+        <div class="project-showcase-card tilt-card" data-tilt data-tilt-max="5" data-tilt-glare="true" data-tilt-max-glare="0.1">
+          <div class="project-img-wrapper">
+            <img src="gig.png" alt="GigShield AI" class="project-img" />
+            <div class="project-overlay">
+              <a href="https://gig-shield.onrender.com/" class="btn-demo"><i class='bx bx-link-external'></i> Live Demo</a>
+              <a href="https://github.com/IshaanSaxena2005/Gig-Shield" class="btn-github"><i class='bx bxl-github'></i> GitHub</a>
+            </div>
+          </div>
+          <div class="project-info">
+            <h2 class="project-title">GigShield AI</h2>
+            <div class="project-badge">Guidewire Hackathon | Rank 34 / 4600+ Teams (Top 1%)</div>
+            <p class="project-desc">Full-stack parametric insurance platform for gig workers that automates income-loss compensation using weather intelligence and machine learning.</p>
+            <ul class="project-highlights">
+              <li><i class='bx bx-check-circle'></i> Automated weather-based payouts</li>
+              <li><i class='bx bx-check-circle'></i> Fraud detection engine</li>
+              <li><i class='bx bx-check-circle'></i> Risk prediction model</li>
+              <li><i class='bx bx-check-circle'></i> JWT Authentication & RBAC</li>
+              <li><i class='bx bx-check-circle'></i> Stripe payment integration</li>
+            </ul>
+            <div class="tech-pills">
+              <span>React</span><span>Node.js</span><span>Express.js</span><span>Flask</span><span>scikit-learn</span><span>Stripe</span><span>OpenWeather API</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-showcase-card tilt-card" data-tilt data-tilt-max="5" data-tilt-glare="true" data-tilt-max-glare="0.1">
+          <div class="project-img-wrapper">
+            <img src="finance.png" alt="Smart Financial Intelligence System" class="project-img" />
+            <div class="project-overlay">
+              <a href="#" class="btn-demo"><i class='bx bx-link-external'></i> Live Demo</a>
+              <a href="https://github.com/IshaanSaxena2005/SpendWise-Pro" class="btn-github"><i class='bx bxl-github'></i> GitHub</a>
+            </div>
+          </div>
+          <div class="project-info">
+            <h2 class="project-title">Smart Financial Intelligence System (SpendWise Pro)</h2>
+            <p class="project-desc">AI-powered financial intelligence platform providing forecasting, anomaly detection, analytics, and spending insights.</p>
+            <ul class="project-highlights">
+              <li><i class='bx bx-check-circle'></i> Expense forecasting</li>
+              <li><i class='bx bx-check-circle'></i> Financial health scoring</li>
+              <li><i class='bx bx-check-circle'></i> Budget breach prediction</li>
+              <li><i class='bx bx-check-circle'></i> Spending pattern analytics</li>
+              <li><i class='bx bx-check-circle'></i> Interactive dashboards & AI recommendations</li>
+            </ul>
+            <div class="tech-pills">
+              <span>React</span><span>TypeScript</span><span>Node.js</span><span>Express.js</span><span>MySQL</span><span>Python</span><span>scikit-learn</span><span>Docker</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="project-showcase-card tilt-card" data-tilt data-tilt-max="5" data-tilt-glare="true" data-tilt-max-glare="0.1">
+          <div class="project-img-wrapper">
+            <img src="echoes.png" alt="Echoes of the Cosmos" class="project-img" />
+            <div class="project-overlay">
+              <a href="https://echoes-of-the-cosmos-1.onrender.com/" target="_blank" class="btn-demo"><i class='bx bx-link-external'></i> Live Demo</a>
+              <a href="https://github.com/IshaanSaxena2005/Echoes-of-the-Cosmos" class="btn-github"><i class='bx bxl-github'></i> GitHub</a>
+            </div>
+          </div>
+          <div class="project-info">
+            <h2 class="project-title">Echoes of the Cosmos</h2>
+            <p class="project-desc">Interactive educational platform delivering real-time astronomical information through NASA and SpaceX integrations.</p>
+            <ul class="project-highlights">
+              <li><i class='bx bx-check-circle'></i> NASA API Integration</li>
+              <li><i class='bx bx-check-circle'></i> SpaceX API Integration</li>
+              <li><i class='bx bx-check-circle'></i> AI Chatbot</li>
+              <li><i class='bx bx-check-circle'></i> Interactive Learning Modules</li>
+              <li><i class='bx bx-check-circle'></i> Responsive Dashboard & Space Features</li>
+            </ul>
+            <div class="tech-pills">
+              <span>HTML</span><span>CSS</span><span>JavaScript</span><span>Node.js</span><span>NASA API</span><span>SpaceX API</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- NEW EXPERIENCE SECTION -->
+    <section class="experience reveal" id="experience">
+      <h1 class="sub-title">My <span>Experience</span></h1>
+      <div class="timeline">
+        <div class="timeline-item tilt-card" data-tilt data-tilt-axis="y" data-tilt-max="10">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">2025 - Present</div>
+            <h3>Research Intern – UROP (Undergraduate Research Program)</h3>
+            <ul class="timeline-highlights">
+              <li><i class='bx bx-chevron-right'></i> Benchmarked 5+ object detection architectures including YOLOv5-v8 and Faster R-CNN.</li>
+              <li><i class='bx bx-chevron-right'></i> Identified approximately 23% mAP performance gap in low-contrast military environments.</li>
+              <li><i class='bx bx-chevron-right'></i> Designed a YOLOv11-based framework with custom attention mechanisms.</li>
+              <li><i class='bx bx-chevron-right'></i> Conducted structured review across 15+ research papers.</li>
+              <li><i class='bx bx-chevron-right'></i> Working on computer vision solutions for military surveillance systems.</li>
+            </ul>
+            <div class="tech-pills">
+              <span>Python</span><span>YOLOv11</span><span>Computer Vision</span><span>OpenCV</span><span>Deep Learning</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CERTIFICATIONS SECTION -->
+    <section class="certifications reveal" id="certifications">
+      <h1 class="sub-title">My <span>Certifications</span></h1>
+      <div class="cert-container">
+        <!-- Cert 1 -->
+        <div class="cert-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+          <div class="cert-header">
+            <div class="cert-icon"><i class='bx bx-code-alt'></i></div>
+            <h3>Full Stack Web Development</h3>
+          </div>
+          <p class="cert-issuer">Apna College</p>
+          <p class="cert-desc">🌐 HTML, CSS & Responsive Design<br>⚡ JavaScript & DOM Manipulation<br>🔗 Backend Fundamentals & APIs<br>🛠️ Git & GitHub</p>
+          <a href="https://drive.google.com/file/d/1nV2oIqHhxWLgZOcH0RPKtSTSLhbJ9Bdy/view" target="_blank" class="btn-cert"><i class='bx bx-link-external'></i> View Certificate</a>
+        </div>
+        <!-- Cert 2 -->
+        <div class="cert-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+          <div class="cert-header">
+            <div class="cert-icon"><i class='bx bx-git-merge'></i></div>
+            <h3>Advanced Software Engineering Virtual Experience</h3>
+          </div>
+          <p class="cert-issuer">JPMorgan Chase & Co.</p>
+          <p class="cert-desc">🏗️ Software Engineering Workflows<br>⚙️ Backend Systems & Architecture<br>📊 Data Visualization<br>🚀 Enterprise Development Practices</p>
+          <a href="https://drive.google.com/file/d/1gRn35VpLfBVprq1c7-EpNFMkojXuhroD/view" target="_blank" class="btn-cert"><i class='bx bx-link-external'></i> View Certificate</a>
+        </div>
+        <!-- Cert 3 -->
+        <div class="cert-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+          <div class="cert-header">
+            <div class="cert-icon"><i class='bx bx-bar-chart-alt'></i></div>
+            <h3>Data Analytics Virtual Job Simulation</h3>
+          </div>
+          <p class="cert-issuer">Deloitte (Forage)</p>
+          <p class="cert-desc">📈 Data Analysis & Interpretation<br>📊 Dashboard Creation<br>🗂️ Data Cleaning<br>💡 Business Insights</p>
+          <a href="https://drive.google.com/file/d/1hEcCr1KNi2LSAcPaPCYlFXqMb6F6hWo7/view" target="_blank" class="btn-cert"><i class='bx bx-link-external'></i> View Certificate</a>
+        </div>
+        <!-- Cert 4 -->
+        <div class="cert-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+          <div class="cert-header">
+            <div class="cert-icon"><i class='bx bx-brain'></i></div>
+            <h3>AI Fundamentals</h3>
+          </div>
+          <p class="cert-issuer">IBM SkillsBuild</p>
+          <p class="cert-desc">🤖 Artificial Intelligence Basics<br>🧠 Machine Learning Concepts<br>🔗 Neural Networks<br>⚖️ Ethical AI Principles</p>
+          <a href="https://www.credly.com/badges/b6d9a37e-1a2d-41be-843d-ba6e176601dd/linked_in_profile" target="_blank" class="btn-cert"><i class='bx bx-link-external'></i> View Certificate</a>
+        </div>
+        <!-- Cert 5 -->
+        <div class="cert-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+          <div class="cert-header">
+            <div class="cert-icon"><i class='bx bx-shield-quarter'></i></div>
+            <h3>Cyber Security Virtual Experience</h3>
+          </div>
+          <p class="cert-issuer">Deloitte (Forage)</p>
+          <p class="cert-desc">🛡️ Cyber Security Fundamentals<br>⚠️ Threat & Risk Analysis<br>🔍 Security Assessment<br>🔐 Information Security</p>
+          <a href="https://drive.google.com/file/d/1T-GUCYQ7Q0PAbUSjMn7U_37RVvycyps-/view" target="_blank" class="btn-cert"><i class='bx bx-link-external'></i> View Certificate</a>
+        </div>
+        <!-- Cert 6 -->
+        <div class="cert-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+          <div class="cert-header">
+            <div class="cert-icon"><i class='bx bxl-microsoft'></i></div>
+            <h3>Power BI Certification</h3>
+          </div>
+          <p class="cert-issuer">Microsoft</p>
+          <p class="cert-desc">📈 Interactive Dashboards<br>📊 Data Visualization<br>🔄 Data Modeling<br>💡 Business Reporting</p>
+          <a href="https://drive.google.com/file/d/1MyOVZl2p1IPD4xS72TRjn3cICKvG11RX/view" target="_blank" class="btn-cert"><i class='bx bx-link-external'></i> View Certificate</a>
+        </div>
+        <!-- Cert 7 -->
+        <div class="cert-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.1">
+          <div class="cert-header">
+            <div class="cert-icon"><i class='bx bx-line-chart'></i></div>
+            <h3>Complete Data Analyst Bootcamp: From Basics to Advanced!</h3>
+          </div>
+          <p class="cert-desc">📊 Data Analysis & EDA<br>🐍 Python & SQL<br>📈 Power BI & Tableau<br>🤖 Generative AI Analytics</p>
+          <a href="https://drive.google.com/file/d/1wM_deYmZ0desbxitnPFhQvleMJHBDUwF/view?usp=drive_link" target="_blank" class="btn-cert"><i class='bx bx-link-external'></i> View Certificate</a>
+        </div>
+        <!-- Cert 8 -->
+        <div class="cert-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.1">
+          <div class="cert-header">
+            <div class="cert-icon"><i class='bx bx-bot'></i></div>
+            <h3>The AI Engineer Course 2026: Complete AI Engineer Bootcamp</h3>
+          </div>
+          <p class="cert-issuer">365 Careers</p>
+          <p class="cert-desc">🤖 Artificial Intelligence<br>🧠 Machine Learning<br>⚡ Generative AI<br>🚀 AI Engineering</p>
+          <a href="https://drive.google.com/file/d/1J3wAvSH0TUNU5_8suIl3ANPaRqeL8ShZ/view?usp=drive_link" target="_blank" class="btn-cert"><i class='bx bx-link-external'></i> View Certificate</a>
+        </div>
+      <div class="cert-card tilt-card" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.2">
+  <div class="cert-header">
+    <div class="cert-icon"><i class='bx bx-file'></i></div>
+    <h3>Microsoft Excel | Coursera</h3>
+  </div>
+  <p class="cert-issuer">Coursera</p>
+  <p class="cert-desc">📊 Data Analysis<br>🧮 Excel Formulas<br>📈 Data Visualization<br>📋 Spreadsheet Management</p>
+  <a href="https://drive.google.com/file/d/1nGXBW16l2ZI6TxNenfDRuWzZV4qGEdsw/view" target="_blank" class="btn-cert"><i class='bx bx-link-external'></i> View Certificate</a>
+</div>
+</div>
+
+    </section>
+
+    <section class="education reveal" id="education">
+      <h1 class="sub-title">My <span>Education</span></h1>
+      <div class="edu-timeline">
+        <div class="edu-dot dot-1"></div>
+        <div class="edu-item right tilt-card" data-tilt data-tilt-axis="y">
+          <div class="edu-card">
+            <h3>SRM Institute of Science and Technology</h3>
+            <span class="edu-pill">Expected 2028</span>
+            <p class="degree">B.Tech in Computer Science and Engineering</p>
+            <p>Specialization: Big Data Analytics</p>
+            <span class="edu-pill highlight">CGPA: 8.83</span>
+          </div>
+        </div>
+
+        <div class="edu-dot dot-2"></div>
+        <div class="edu-item left tilt-card" data-tilt data-tilt-axis="y">
+          <div class="edu-card">
+            <h3>Manav Rachna International School</h3>
+            <span class="edu-pill">2023 - 2024</span>
+            <p class="degree">CBSE - Class 12</p>
+            <span class="edu-pill highlight">Percentage: 68%</span>
+          </div>
+        </div>
+
+        <div class="edu-dot dot-3"></div>
+        <div class="edu-item right tilt-card" data-tilt data-tilt-axis="y">
+          <div class="edu-card">
+            <h3>St Andrews Scots Sr Sec School</h3>
+            <span class="edu-pill">2020 - 2021</span>
+            <p class="degree">CBSE - Class 10</p>
+            <span class="edu-pill highlight">Percentage: 86%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact reveal" id="contact">
+      <div class="contact-text">
+        <h1 class="sub-title">Contact <span>Me</span></h1>
+        <p>I'm always open to internship opportunities, project collaborations, and learning-driven discussions.
+           If you'd like to connect, collaborate, or have any questions, feel free to reach out through the platforms below.
+        </p>
+        <div class="contact-list">
+          <div>
+              <i class='bx bxl-gmail'></i>
+              <a href="mailto:ishaansaxena2005@gmail.com">saxenaishaan3@gmail.com</a>
+          </div>
+          <div>
+              <i class='bx bxl-linkedin'></i>
+              <a href="https://www.linkedin.com/in/ishaan-saxena2005/" target="_blank">
+                  linkedin.com/in/ishaan-saxena2005
+              </a>
+          </div>
+          <div>
+              <i class='bx bxl-github'></i>
+              <a href="https://github.com/IshaanSaxena2005" target="_blank">
+                  github.com/IshaanSaxena2005
+              </a>
+          </div>
+          <div>
+              <i class='bx bxs-phone'></i> 
+              <span>+91 7303841811</span>
+          </div>
+        </div>
+      </div>
+      <div class="contact-form">
+        <form action="">
+          <input type="text" placeholder="Enter Your Name" required>
+          <input type="email" placeholder="Enter Your Email" required>
+          <input type="text" placeholder="Enter Your Subject" required>
+          <textarea name="" id="" cols="40" rows="10" placeholder="Enter Your Message " required></textarea>
+          <input type="submit" value="Submit" class="send">
+        </form>
+      </div>
+    </section>
+    <div class="last-text reveal">
+      <p>Designed and developed by Ishaan — always evolving, always improving.</p>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="script.js"></script>
+  </body>
+</html>
