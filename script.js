@@ -1,6 +1,6 @@
 // Typed.js for Home section
 var typed = new Typed(".text", {
-    strings: ["Frontend Developer", "Data Analyst", "Software Engineer"],
+    strings: ["FullStack Developer", "Data Analyst", "Software Engineer"],
     typeSpeed: 100,
     backSpeed: 60,
     backDelay: 1000,
