@@ -356,42 +356,44 @@
   }
 
   /**
-   * Animate letters along cubic curves from ISHAAN → THE PORTFOLIO.
+   * Letter-by-letter progressive morph from ISHAAN → PORTFOLIO
+   * Each letter transforms sequentially in a coordinated manner
    */
   function runMorph(fromEls, fromSlots, toSlots, plan) {
     return new Promise((resolve) => {
-      const duration = 3600;
+      const totalDuration = 3500;
       const actors = [];
 
-      // Moving / morphing letters from ISHAAN
+      // Process moving letters (from ISHAAN to PORTFOLIO positions)
       plan.moves.forEach((move, idx) => {
         const el = fromEls[move.fromIndex];
         const from = fromSlots[move.fromIndex];
         const to = toSlots[move.toIndex];
-        const startX = from.x;
-        const startY = from.y;
-        const endX = to.x;
-        const endY = to.y;
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const dist = Math.hypot(dx, dy) || 1;
-        // Perpendicular offset for a dramatic arc
-        const nx = -dy / dist;
-        const ny = dx / dist;
-        const arc = (80 + (idx % 3) * 40) * (idx % 2 === 0 ? 1 : -1);
-        const cp1x = startX + dx * 0.25 + nx * arc;
-        const cp1y = startY + dy * 0.15 + ny * arc * 0.6;
-        const cp2x = startX + dx * 0.75 + nx * arc * 0.35;
-        const cp2y = startY + dy * 0.85 + ny * arc * 0.25;
-        const delay = idx * 65;
 
         el.classList.remove('is-falling');
         el.classList.add('is-morphing');
-        // Lock settled position before clearing the fall animation
         el.style.animation = 'none';
-        el.style.transform = `translate3d(${startX}px, ${startY}px, 0)`;
+        el.style.transform = `translate3d(${from.x}px, ${from.y}px, 0)`;
         el.style.opacity = '1';
         el.style.filter = 'none';
+
+        // Calculate smooth curve path
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const nx = -dy / dist;
+        const ny = dx / dist;
+
+        // Subtle arc for natural movement
+        const arc = 30 + (idx % 2) * 20;
+        const cp1x = from.x + dx * 0.3 + nx * arc;
+        const cp1y = from.y + dy * 0.2 + ny * arc * 0.5;
+        const cp2x = from.x + dx * 0.7 + nx * arc * 0.3;
+        const cp2y = from.y + dy * 0.8;
+
+        // Stagger each letter for progressive effect
+        const delay = idx * 180;
+        const duration = 800;
 
         actors.push({
           el,
@@ -399,10 +401,10 @@
           keepChar: move.keepChar,
           targetChar: to.char,
           swapped: false,
-          startX,
-          startY,
-          endX,
-          endY,
+          startX: from.x,
+          startY: from.y,
+          endX: to.x,
+          endY: to.y,
           cp1x,
           cp1y,
           cp2x,
@@ -415,11 +417,10 @@
         });
       });
 
-      // New letters fly in from outside / emerge
+      // Process new letters (fly in from sides)
       plan.births.forEach((toIndex, idx) => {
         const to = toSlots[toIndex];
         if (to.char === ' ') {
-          // Invisible spacer — place immediately at end of morph
           const el = createLetterEl(' ', to.fontSize, to.x, to.y, { w: to.w });
           el.style.opacity = '0';
           el.classList.add('is-settled-title');
@@ -430,31 +431,18 @@
             endY: to.y,
             endSize: to.fontSize,
             endW: to.w,
-            delay: duration * 0.55,
-            duration: duration * 0.4,
+            delay: plan.moves.length * 180 + idx * 150,
+            duration: 600,
           });
           return;
         }
 
-        const side = idx % 4;
-        let startX;
-        let startY;
-        if (side === 0) {
-          startX = -80 - Math.random() * 120;
-          startY = to.y + (Math.random() - 0.5) * 160;
-        } else if (side === 1) {
-          startX = window.innerWidth + 80 + Math.random() * 120;
-          startY = to.y + (Math.random() - 0.5) * 160;
-        } else if (side === 2) {
-          startX = to.x + (Math.random() - 0.5) * 100;
-          startY = -100 - Math.random() * 80;
-        } else {
-          // Emerge near center with scatter
-          startX = window.innerWidth / 2 + (Math.random() - 0.5) * 220;
-          startY = window.innerHeight / 2 + (Math.random() - 0.5) * 160;
-        }
+        // Fly in from alternating sides
+        const fromLeft = idx % 2 === 0;
+        const startX = fromLeft ? -100 : window.innerWidth + 100;
+        const startY = to.y;
 
-        const el = createLetterEl(to.char, to.fontSize * 0.55, startX, startY, {
+        const el = createLetterEl(to.char, to.fontSize * 0.5, startX, startY, {
           w: to.w,
         });
         el.style.opacity = '0';
@@ -465,8 +453,14 @@
         const dist = Math.hypot(dx, dy) || 1;
         const nx = -dy / dist;
         const ny = dx / dist;
-        const arc = 60 + Math.random() * 70;
-        const sign = idx % 2 === 0 ? 1 : -1;
+        const arc = 40;
+        const cp1x = startX + dx * 0.4 + nx * arc;
+        const cp1y = startY + dy * 0.3 + ny * arc * 0.5;
+        const cp2x = startX + dx * 0.7 + nx * arc * 0.2;
+        const cp2y = startY + dy * 0.8;
+
+        const delay = plan.moves.length * 180 + idx * 150;
+        const duration = 700;
 
         actors.push({
           el,
@@ -475,15 +469,15 @@
           startY,
           endX: to.x,
           endY: to.y,
-          cp1x: startX + dx * 0.3 + nx * arc * sign,
-          cp1y: startY + dy * 0.2 + ny * arc * sign * 0.5,
-          cp2x: startX + dx * 0.7 + nx * arc * sign * 0.2,
-          cp2y: startY + dy * 0.75,
-          startSize: to.fontSize * 0.45,
+          cp1x,
+          cp1y,
+          cp2x,
+          cp2y,
+          startSize: to.fontSize * 0.5,
           endSize: to.fontSize,
           endW: to.w,
-          delay: 420 + idx * 100,
-          duration: duration - 420 - idx * 45,
+          delay,
+          duration,
         });
       });
 
@@ -532,22 +526,22 @@
           );
           const size = lerp(actor.startSize, actor.endSize, t);
 
-          // Motion blur + glow peak mid-flight
-          const blur = rawT > 0.08 && rawT < 0.88 ? Math.sin(rawT * Math.PI) * 2.4 : 0;
+          // Subtle motion blur
+          const blur = rawT > 0.1 && rawT < 0.9 ? Math.sin(rawT * Math.PI) * 1.5 : 0;
           let opacity = 1;
           if (actor.kind === 'birth') {
-            opacity = Math.min(1, rawT * 2.2);
+            opacity = Math.min(1, rawT * 2);
           }
 
-          // Mid-flight character swap for morphing letters
+          // Character swap at midpoint
           if (
             actor.kind === 'move' &&
             !actor.keepChar &&
             !actor.swapped &&
-            rawT >= 0.42
+            rawT >= 0.5
           ) {
             actor.swapped = true;
-            actor.el.style.filter = `blur(${Math.max(blur, 6)}px)`;
+            actor.el.style.filter = `blur(${Math.max(blur, 4)}px)`;
             actor.el.textContent = actor.targetChar;
           }
 
@@ -561,11 +555,12 @@
           actor.el.style.height = size + 'px';
           actor.el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
           actor.el.style.filter =
-            blur > 0.2 ? `blur(${blur}px)` : actor.swapped && rawT < 0.55
-              ? `blur(${lerp(6, 0, (rawT - 0.42) / 0.13)}px)`
+            blur > 0.2 ? `blur(${blur}px)` : actor.swapped && rawT < 0.6
+              ? `blur(${lerp(4, 0, (rawT - 0.5) / 0.1)}px)`
               : 'none';
 
-          if (rawT > 0.05 && rawT < 0.95 && Math.random() > 0.45) {
+          // Purple trails during movement
+          if (rawT > 0.05 && rawT < 0.95 && Math.random() > 0.5) {
             spawnTrail(x + actor.endW / 2, y + size / 2, Math.sin(rawT * Math.PI));
           }
 
@@ -586,7 +581,6 @@
         } else if (!resolved) {
           resolved = true;
           morphRaf = null;
-          // Snap all to final readable state
           actors.forEach((actor) => {
             actor.el.style.filter = 'none';
             actor.el.style.opacity = actor.kind === 'space' ? '0' : '1';
@@ -597,14 +591,13 @@
       };
 
       morphRaf = requestAnimationFrame(tick);
-      // Safety timeout
       trackTimeout(() => {
         if (!resolved) {
           resolved = true;
           stopMorph();
           resolve();
         }
-      }, duration + 900);
+      }, totalDuration + 800);
     });
   }
 
@@ -634,7 +627,7 @@
     await waitForFall(fromEls);
     await wait(550); // brief hold on ISHAAN
 
-    // STAGE 2 — continuous letter morph into PORTFOLIO
+    // STAGE 2 — letter-by-letter progressive morph into PORTFOLIO
     const plan = buildMorphPlan(fromSlots, toSlots);
     await runMorph(fromEls, fromSlots, toSlots, plan);
     await wait(750); // hold PORTFOLIO
