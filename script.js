@@ -364,8 +364,8 @@
    */
   function runMorph(fromEls, fromSlots, toSlots, plan) {
     return new Promise((resolve) => {
-      const changeInterval = 350; // 350ms between character changes
-      const flipDuration = 300; // Each character flip takes 300ms
+      const changeInterval = 190; // 190ms between character changes (faster)
+      const flipDuration = 190; // Each character flip takes 190ms (faster)
 
       // Define the transformation sequence
       const wordSequence = [
@@ -411,7 +411,8 @@
 
             if (idx === charIndex) {
               // This character will flip with 3D rotation
-              el.style.transition = 'transform 150ms ease-in-out, opacity 150ms ease-in-out';
+              const halfDuration = flipDuration / 2;
+              el.style.transition = `transform ${halfDuration}ms ease-in-out, opacity ${halfDuration}ms ease-in-out`;
               el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0) rotateX(90deg)`;
               el.style.opacity = '0';
 
@@ -419,7 +420,7 @@
                 el.textContent = newChar;
                 el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0) rotateX(0deg)`;
                 el.style.opacity = '1';
-              }, 150);
+              }, halfDuration);
             } else {
               el.style.opacity = '1';
               el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0)`;
