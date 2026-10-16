@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --bg-color: #111111;
@@ -25,6 +25,255 @@ body {
   color: var(--text-primary);
   background: #0c0c0c;
   overflow-x: hidden;
+}
+
+/* Lock scroll while cinematic intro plays */
+html.intro-pending,
+html.intro-pending body,
+body.intro-active {
+  overflow: hidden;
+  height: 100%;
+}
+
+/* ========================================
+   CINEMATIC INTRO
+   ======================================== */
+.cinematic-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+  pointer-events: auto;
+  will-change: transform;
+}
+
+.cinematic-intro[hidden],
+html.intro-done .cinematic-intro {
+  display: none !important;
+  pointer-events: none;
+}
+
+.intro-particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.intro-lighting {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 42%, rgba(168, 85, 247, 0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 20% 80%, rgba(124, 58, 237, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 35% 28% at 80% 20%, rgba(192, 132, 252, 0.1) 0%, transparent 70%);
+  animation: introLightPulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes introLightPulse {
+  from { opacity: 0.75; }
+  to { opacity: 1; }
+}
+
+.intro-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.intro-stage--title {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.intro-name {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: clamp(0.05em, 0.4vw, 0.18em);
+  perspective: 800px;
+}
+
+.intro-letter {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: clamp(3.2rem, 12vw, 8.5rem);
+  letter-spacing: 0.12em;
+  color: #f5f0ff;
+  text-shadow:
+    0 0 18px rgba(168, 85, 247, 0.55),
+    0 0 48px rgba(124, 58, 237, 0.35),
+    0 4px 24px rgba(0, 0, 0, 0.6);
+  transform: translate3d(0, -120vh, 0);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* Stage 1: letters fall with gravity + soft bounce */
+.cinematic-intro.stage-name .intro-letter {
+  animation: letterFall 1.05s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation-delay: calc(0.14s * var(--i) + 0.25s);
+}
+
+@keyframes letterFall {
+  0% {
+    transform: translate3d(0, -120vh, 0);
+    opacity: 0;
+  }
+  55% {
+    opacity: 1;
+  }
+  72% {
+    transform: translate3d(0, 0.06em, 0);
+    opacity: 1;
+  }
+  84% {
+    transform: translate3d(0, -0.035em, 0);
+  }
+  93% {
+    transform: translate3d(0, 0.012em, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+.cinematic-intro.stage-name-exit .intro-stage--name {
+  animation: stageFadeOut 0.55s ease forwards;
+}
+
+@keyframes stageFadeOut {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+    filter: blur(6px);
+  }
+}
+
+.intro-portfolio-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: clamp(1.35rem, 5.5vw, 3.4rem);
+  letter-spacing: 0.35em;
+  text-indent: 0.35em;
+  color: #f3e8ff;
+  text-align: center;
+  text-shadow:
+    0 0 20px rgba(168, 85, 247, 0.7),
+    0 0 60px rgba(139, 92, 246, 0.45),
+    0 0 100px rgba(124, 58, 237, 0.25);
+  transform: translateY(18px) scale(0.94);
+  opacity: 0;
+  will-change: transform, opacity, filter;
+}
+
+.cinematic-intro.stage-title .intro-stage--title {
+  opacity: 1;
+  visibility: visible;
+}
+
+.cinematic-intro.stage-title .intro-portfolio-title {
+  animation: titleReveal 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes titleReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.94);
+    filter: blur(10px);
+    letter-spacing: 0.55em;
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    letter-spacing: 0.35em;
+  }
+}
+
+.cinematic-intro.stage-title-exit .intro-portfolio-title {
+  animation: titleHoldFade 0.45s ease forwards;
+}
+
+@keyframes titleHoldFade {
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+    filter: blur(4px);
+  }
+}
+
+/* Stage 3: curtain slides down, revealing portfolio top → bottom */
+.cinematic-intro.stage-reveal {
+  animation: curtainReveal 1.35s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+@keyframes curtainReveal {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 105%, 0);
+  }
+}
+
+.cinematic-intro.stage-reveal::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.85));
+  pointer-events: none;
+  z-index: 5;
+}
+
+@media (max-width: 768px) {
+  .intro-letter {
+    font-size: clamp(2.6rem, 14vw, 4.5rem);
+    letter-spacing: 0.08em;
+  }
+  .intro-portfolio-title {
+    letter-spacing: 0.22em;
+    text-indent: 0.22em;
+    padding: 0 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-lighting {
+    animation: none;
+  }
+  .cinematic-intro.stage-name .intro-letter,
+  .cinematic-intro.stage-title .intro-portfolio-title,
+  .cinematic-intro.stage-reveal {
+    animation: none !important;
+  }
+  .intro-letter,
+  .intro-portfolio-title {
+    transform: none;
+    opacity: 1;
+    filter: none;
+  }
 }
 
 /* Video Background */

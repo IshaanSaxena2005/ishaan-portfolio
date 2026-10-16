@@ -12,8 +12,41 @@
     <script src="https://unpkg.com/typed.js@2.0.15/dist/typed.umd.js"></script>
     <!-- Vanilla Tilt for 3D interactions -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+    <script>
+      // Cover page immediately on first visit; skip replay within the same session
+      (function () {
+        try {
+          if (sessionStorage.getItem('portfolioIntroPlayed') === '1') {
+            document.documentElement.classList.add('intro-done');
+          } else {
+            document.documentElement.classList.add('intro-pending');
+          }
+        } catch (e) {
+          document.documentElement.classList.add('intro-pending');
+        }
+      })();
+    </script>
   </head>
   <body>
+    <!-- Cinematic Intro Overlay -->
+    <div id="cinematic-intro" class="cinematic-intro" aria-hidden="true">
+      <canvas id="intro-particles" class="intro-particles" aria-hidden="true"></canvas>
+      <div class="intro-lighting" aria-hidden="true"></div>
+      <div class="intro-stage intro-stage--name" id="intro-stage-name">
+        <div class="intro-name" id="intro-name" aria-label="ISHAAN">
+          <span class="intro-letter" style="--i: 0">I</span>
+          <span class="intro-letter" style="--i: 1">S</span>
+          <span class="intro-letter" style="--i: 2">H</span>
+          <span class="intro-letter" style="--i: 3">A</span>
+          <span class="intro-letter" style="--i: 4">A</span>
+          <span class="intro-letter" style="--i: 5">N</span>
+        </div>
+      </div>
+      <div class="intro-stage intro-stage--title" id="intro-stage-title">
+        <p class="intro-portfolio-title">THE PORTFOLIO</p>
+      </div>
+    </div>
+
     <!-- Video Background from Aura -->
     <div class="video-background">
       <video autoplay loop muted playsinline src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_064122_c4750c0e-7476-4b44-94a2-a85a65c63bf2.mp4"></video>
