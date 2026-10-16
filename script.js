@@ -1,11 +1,11 @@
 /* ========================================
    CINEMATIC INTRO
-   ISHAAN falls → letter morph → THE PORTFOLIO → curtain reveal
+   ISHAAN falls → letter morph → PORTFOLIO → curtain reveal
    Plays on every full page reload; respects prefers-reduced-motion
    ======================================== */
 (function initCinematicIntro() {
   const FROM_WORD = 'ISHAAN';
-  const TO_WORD = 'THE PORTFOLIO';
+  const TO_WORD = 'PORTFOLIO';
 
   const intro = document.getElementById('cinematic-intro');
   const canvas = document.getElementById('intro-particles');
@@ -634,10 +634,10 @@
     await waitForFall(fromEls);
     await wait(550); // brief hold on ISHAAN
 
-    // STAGE 2 — continuous letter morph into THE PORTFOLIO
+    // STAGE 2 — continuous letter morph into PORTFOLIO
     const plan = buildMorphPlan(fromSlots, toSlots);
     await runMorph(fromEls, fromSlots, toSlots, plan);
-    await wait(750); // hold THE PORTFOLIO
+    await wait(750); // hold PORTFOLIO
 
     // STAGE 3 — curtain reveal
     intro.classList.add('stage-reveal');
