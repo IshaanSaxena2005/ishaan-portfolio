@@ -196,6 +196,8 @@ html.intro-done .cinematic-intro {
 .intro-letter.is-morphing {
   transition: none;
   filter: blur(0);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
 }
 
 .intro-letter.is-settled-title {

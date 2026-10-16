@@ -68,7 +68,7 @@
   }
 
   function getTitleFontSize() {
-    // PORTFOLIO should be the same size as ISHAAN for visual prominence
+    // Use ISHAAN's size for PORTFOLIO to maintain visual prominence
     const w = window.innerWidth;
     if (w < 480) return Math.max(42, w * 0.14);
     if (w < 768) return Math.min(72, w * 0.13);
@@ -76,8 +76,9 @@
   }
 
   function getTitleTracking() {
-    // Tighter spacing for PORTFOLIO (9 letters) to fit at same size as ISHAAN (6 letters)
-    return window.innerWidth < 768 ? 0.08 : 0.12;
+    // During transformation, use same tracking as ISHAAN (0.1)
+    // For final PORTFOLIO, use tighter spacing to fit at same visual size
+    return 0.1;
   }
 
   /** Measure centered layout for a word; returns [{char,x,y,w,h,fontSize}] */
@@ -358,116 +359,127 @@
   }
 
   /**
-   * In-place letter-by-letter morph from ISHAAN → PORTFOLIO
-   * Letters transform at their current position without flying across screen
+   * Progressive character transformation from ISHAAN → PORTFOLIO
+   * The visible word changes character by character through intermediate states
    */
   function runMorph(fromEls, fromSlots, toSlots, plan) {
     return new Promise((resolve) => {
-      const letterInterval = 300; // 300ms between letter changes
-      const morphDuration = 400; // Each letter takes 400ms to transform
-      const actors = [];
+      const changeInterval = 350; // 350ms between character changes
+      const flipDuration = 300; // Each character flip takes 300ms
 
-      // Clear all existing letters and recreate them at PORTFOLIO positions
-      // This ensures the word stays centered as it grows from 6 to 9 letters
-      lettersRoot.innerHTML = '';
+      // Define the transformation sequence
+      const wordSequence = [
+        'ISHAAN',
+        'PSHAAN',
+        'POHAAN',
+        'PORHAAN',
+        'PORTAAN',
+        'PORTFAN',
+        'PORTFON',
+        'PORTFOL',
+        'PORTFOLI',
+        'PORTFOLIO'
+      ];
 
-      // Create all PORTFOLIO letters initially hidden
-      const toEls = toSlots.map((slot, idx) => {
-        const el = createLetterEl(slot.char, slot.fontSize, slot.x, slot.y, {
-          w: slot.w,
-        });
-        el.style.opacity = '0';
-        el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0) scale(0.8)`;
-        el.style.filter = 'blur(4px)';
-        el.classList.add('is-morphing');
-        return el;
-      });
+      // Function to render a word at current center position
+      function renderWord(word, fontSize, trackingEm) {
+        const slots = measureWordLayout(word, fontSize, trackingEm);
+        lettersRoot.innerHTML = '';
+        lettersRoot.setAttribute('aria-label', word);
 
-      // Animate each letter appearing one by one at its final position
-      toEls.forEach((el, idx) => {
-        const slot = toSlots[idx];
-        const delay = idx * letterInterval;
-
-        actors.push({
-          el,
-          kind: 'appear',
-          endX: slot.x,
-          endY: slot.y,
-          endSize: slot.fontSize,
-          endW: slot.w,
-          delay,
-          duration: morphDuration,
-        });
-      });
-
-      lettersRoot.setAttribute('aria-label', TO_WORD);
-      const start = performance.now();
-      let resolved = false;
-
-      const tick = (now) => {
-        if (finished) return;
-        const elapsed = now - start;
-        let allDone = true;
-
-        for (const actor of actors) {
-          const local = elapsed - actor.delay;
-          if (local < 0) {
-            allDone = false;
-            continue;
-          }
-
-          const rawT = Math.min(1, local / actor.duration);
-          if (rawT < 1) allDone = false;
-
-          const t = easeOutBack(rawT);
-
-          // Animate from small/blurry to full size/crisp
-          const scale = 0.8 + t * 0.2;
-          const blur = 4 * (1 - t);
-          const opacity = Math.min(1, rawT * 2);
-
-          actor.el.style.opacity = String(opacity);
-          actor.el.style.transform = `translate3d(${actor.endX}px, ${actor.endY}px, 0) scale(${scale})`;
-          actor.el.style.filter = blur > 0.5 ? `blur(${blur}px)` : 'none';
-
-          // Subtle purple trail during appearance
-          if (rawT > 0.1 && rawT < 0.9 && Math.random() > 0.6) {
-            spawnTrail(actor.endX + actor.endW / 2, actor.endY + actor.endSize / 2, rawT);
-          }
-
-          if (rawT >= 1) {
-            actor.el.style.transform = `translate3d(${actor.endX}px, ${actor.endY}px, 0) scale(1)`;
-            actor.el.style.filter = 'none';
-            actor.el.style.opacity = '1';
-            actor.el.classList.add('is-settled-title');
-            actor.el.classList.remove('is-morphing');
-          }
-        }
-
-        if (!allDone) {
-          morphRaf = requestAnimationFrame(tick);
-        } else if (!resolved) {
-          resolved = true;
-          morphRaf = null;
-          actors.forEach((actor) => {
-            actor.el.style.filter = 'none';
-            actor.el.style.opacity = '1';
-            actor.el.style.transform = `translate3d(${actor.endX}px, ${actor.endY}px, 0) scale(1)`;
-            actor.el.classList.add('is-settled-title');
+        slots.forEach((slot) => {
+          const el = createLetterEl(slot.char, slot.fontSize, slot.x, slot.y, {
+            w: slot.w,
           });
-          resolve();
-        }
-      };
+          el.style.opacity = '1';
+          el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0)`;
+          el.classList.add('is-settled-title');
+        });
+      }
 
-      morphRaf = requestAnimationFrame(tick);
-      const totalDuration = toEls.length * letterInterval + morphDuration + 200;
-      trackTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          stopMorph();
-          resolve();
+      // Function to animate a single character flip
+      function flipCharacter(word, charIndex, newChar, fontSize, trackingEm) {
+        return new Promise((resolve) => {
+          const slots = measureWordLayout(word, fontSize, trackingEm);
+
+          // Re-render word with the flipping character
+          lettersRoot.innerHTML = '';
+          slots.forEach((slot, idx) => {
+            const el = createLetterEl(slot.char, slot.fontSize, slot.x, slot.y, {
+              w: slot.w,
+            });
+
+            if (idx === charIndex) {
+              // This character will flip with 3D rotation
+              el.style.transition = 'transform 150ms ease-in-out, opacity 150ms ease-in-out';
+              el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0) rotateX(90deg)`;
+              el.style.opacity = '0';
+
+              setTimeout(() => {
+                el.textContent = newChar;
+                el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0) rotateX(0deg)`;
+                el.style.opacity = '1';
+              }, 150);
+            } else {
+              el.style.opacity = '1';
+              el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0)`;
+            }
+            el.classList.add('is-settled-title');
+          });
+
+          setTimeout(resolve, flipDuration);
+        });
+      }
+
+      // Start the progressive transformation
+      async function transformSequence() {
+        const fontSize = fromSlots[0].fontSize;
+        const trackingEm = 0.1; // Use ISHAAN's tracking during transformation
+
+        // ISHAAN is already visible from falling animation
+        // Just ensure it's rendered correctly
+        renderWord(wordSequence[0], fontSize, trackingEm);
+
+        // Wait a moment before starting transformation
+        await wait(400);
+
+        // Progressively transform through the sequence
+        for (let i = 1; i < wordSequence.length; i++) {
+          const prevWord = wordSequence[i - 1];
+          const nextWord = wordSequence[i];
+
+          // Find which character changed
+          let changedIndex = -1;
+          for (let j = 0; j < Math.max(prevWord.length, nextWord.length); j++) {
+            if (prevWord[j] !== nextWord[j]) {
+              changedIndex = j;
+              break;
+            }
+          }
+
+          if (changedIndex !== -1) {
+            // Flip the changed character with 3D effect
+            await flipCharacter(prevWord, changedIndex, nextWord[changedIndex], fontSize, trackingEm);
+          } else {
+            // Word length changed, render the new word
+            renderWord(nextWord, fontSize, trackingEm);
+          }
+
+          // Wait before next change
+          if (i < wordSequence.length - 1) {
+            await wait(changeInterval);
+          }
         }
-      }, totalDuration);
+
+        // Final render with tighter tracking for PORTFOLIO
+        const finalTracking = window.innerWidth < 768 ? 0.08 : 0.12;
+        renderWord(TO_WORD, fontSize, finalTracking);
+        lettersRoot.setAttribute('aria-label', TO_WORD);
+
+        resolve();
+      }
+
+      transformSequence();
     });
   }
 
@@ -497,7 +509,7 @@
     await waitForFall(fromEls);
     await wait(550); // brief hold on ISHAAN
 
-    // STAGE 2 — letter-by-letter progressive morph into PORTFOLIO
+    // STAGE 2 — progressive character transformation from ISHAAN to PORTFOLIO
     const plan = buildMorphPlan(fromSlots, toSlots);
     await runMorph(fromEls, fromSlots, toSlots, plan);
     await wait(750); // hold PORTFOLIO
