@@ -87,143 +87,89 @@ html.intro-done .cinematic-intro {
   position: absolute;
   inset: 0;
   z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.intro-letters {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
 }
 
-.intro-stage--title {
-  opacity: 0;
-  visibility: hidden;
-}
-
-.intro-name {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: clamp(0.05em, 0.4vw, 0.18em);
-  perspective: 800px;
-}
-
 .intro-letter {
-  display: inline-block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'Cinzel', serif;
   font-weight: 700;
-  font-size: clamp(3.2rem, 12vw, 8.5rem);
-  letter-spacing: 0.12em;
   color: #f5f0ff;
   text-shadow:
     0 0 18px rgba(168, 85, 247, 0.55),
     0 0 48px rgba(124, 58, 237, 0.35),
     0 4px 24px rgba(0, 0, 0, 0.6);
-  transform: translate3d(0, -120vh, 0);
   opacity: 0;
-  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity, filter, font-size;
+  user-select: none;
+  white-space: pre;
+  line-height: 1;
+  pointer-events: none;
 }
 
-/* Stage 1: letters fall with gravity + soft bounce */
-.cinematic-intro.stage-name .intro-letter {
-  animation: letterFall 1.05s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-  animation-delay: calc(0.14s * var(--i) + 0.25s);
+.intro-letter.is-space {
+  visibility: hidden;
+  text-shadow: none;
+}
+
+.intro-letter.is-falling {
+  animation: letterFall 0.95s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation-delay: var(--fall-delay, 0s);
 }
 
 @keyframes letterFall {
   0% {
-    transform: translate3d(0, -120vh, 0);
+    transform: translate3d(var(--x), calc(var(--y) - 115vh), 0);
     opacity: 0;
   }
-  55% {
+  50% {
     opacity: 1;
   }
   72% {
-    transform: translate3d(0, 0.06em, 0);
+    transform: translate3d(var(--x), calc(var(--y) + 0.045em), 0);
     opacity: 1;
   }
   84% {
-    transform: translate3d(0, -0.035em, 0);
+    transform: translate3d(var(--x), calc(var(--y) - 0.028em), 0);
   }
   93% {
-    transform: translate3d(0, 0.012em, 0);
+    transform: translate3d(var(--x), calc(var(--y) + 0.01em), 0);
   }
   100% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(var(--x), var(--y), 0);
     opacity: 1;
   }
 }
 
-.cinematic-intro.stage-name-exit .intro-stage--name {
-  animation: stageFadeOut 0.55s ease forwards;
+.intro-letter.is-morphing {
+  transition: none;
+  filter: blur(0);
 }
 
-@keyframes stageFadeOut {
-  to {
-    opacity: 0;
-    transform: scale(0.96);
-    filter: blur(6px);
-  }
-}
-
-.intro-portfolio-title {
-  font-family: 'Cinzel', serif;
+.intro-letter.is-settled-title {
   font-weight: 600;
-  font-size: clamp(1.35rem, 5.5vw, 3.4rem);
-  letter-spacing: 0.35em;
-  text-indent: 0.35em;
-  color: #f3e8ff;
-  text-align: center;
   text-shadow:
     0 0 20px rgba(168, 85, 247, 0.7),
     0 0 60px rgba(139, 92, 246, 0.45),
     0 0 100px rgba(124, 58, 237, 0.25);
-  transform: translateY(18px) scale(0.94);
-  opacity: 0;
-  will-change: transform, opacity, filter;
 }
 
-.cinematic-intro.stage-title .intro-stage--title {
-  opacity: 1;
-  visibility: visible;
-}
-
-.cinematic-intro.stage-title .intro-portfolio-title {
-  animation: titleReveal 1.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes titleReveal {
-  0% {
-    opacity: 0;
-    transform: translateY(22px) scale(0.94);
-    filter: blur(10px);
-    letter-spacing: 0.55em;
-  }
-  60% {
-    opacity: 1;
-    filter: blur(0);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-    letter-spacing: 0.35em;
-  }
-}
-
-.cinematic-intro.stage-title-exit .intro-portfolio-title {
-  animation: titleHoldFade 0.45s ease forwards;
-}
-
-@keyframes titleHoldFade {
-  to {
-    opacity: 0;
-    transform: scale(1.04);
-    filter: blur(4px);
-  }
-}
-
-/* Stage 3: curtain slides down, revealing portfolio top → bottom */
+/* Curtain slides down, revealing portfolio top → bottom */
 .cinematic-intro.stage-reveal {
-  animation: curtainReveal 1.35s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+  animation: curtainReveal 1.25s cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
 
 @keyframes curtainReveal {
@@ -241,38 +187,19 @@ html.intro-done .cinematic-intro {
   left: 0;
   right: 0;
   bottom: -2px;
-  height: 80px;
-  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.85));
+  height: 90px;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.9));
   pointer-events: none;
   z-index: 5;
-}
-
-@media (max-width: 768px) {
-  .intro-letter {
-    font-size: clamp(2.6rem, 14vw, 4.5rem);
-    letter-spacing: 0.08em;
-  }
-  .intro-portfolio-title {
-    letter-spacing: 0.22em;
-    text-indent: 0.22em;
-    padding: 0 1rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .intro-lighting {
     animation: none;
   }
-  .cinematic-intro.stage-name .intro-letter,
-  .cinematic-intro.stage-title .intro-portfolio-title,
+  .intro-letter.is-falling,
   .cinematic-intro.stage-reveal {
     animation: none !important;
-  }
-  .intro-letter,
-  .intro-portfolio-title {
-    transform: none;
-    opacity: 1;
-    filter: none;
   }
 }
 
