@@ -106,11 +106,50 @@ html.intro-done .cinematic-intro {
   justify-content: center;
   font-family: 'Cinzel', serif;
   font-weight: 700;
-  color: #f5f0ff;
+  color: #f8f6ff;
+  /* Ultra-HD 3D dark chrome metallic effect with purple reflections */
+  background: linear-gradient(
+    180deg,
+    #3a3a4a 0%,
+    #1a1a2e 15%,
+    #252535 30%,
+    #1a1a2e 50%,
+    #252535 70%,
+    #1a1a2e 85%,
+    #3a3a4a 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  /* Multiple layered shadows for true 3D extrusion depth */
   text-shadow:
-    0 0 18px rgba(168, 85, 247, 0.55),
-    0 0 48px rgba(124, 58, 237, 0.35),
-    0 4px 24px rgba(0, 0, 0, 0.6);
+    /* Front face highlight */
+    0 0 1px rgba(255, 255, 255, 0.9),
+    0 0 2px rgba(255, 255, 255, 0.6),
+    /* Top light edge */
+    0 -1px 0 rgba(255, 255, 255, 0.3),
+    /* Purple glow */
+    0 0 20px rgba(168, 85, 247, 0.6),
+    0 0 40px rgba(139, 92, 246, 0.4),
+    0 0 60px rgba(124, 58, 237, 0.25),
+    /* 3D extrusion layers - depth perception */
+    1px 1px 0 rgba(60, 50, 80, 0.9),
+    2px 2px 0 rgba(55, 45, 75, 0.85),
+    3px 3px 0 rgba(50, 40, 70, 0.8),
+    4px 4px 0 rgba(45, 35, 65, 0.75),
+    5px 5px 0 rgba(40, 30, 60, 0.7),
+    6px 6px 0 rgba(35, 25, 55, 0.65),
+    7px 7px 0 rgba(30, 20, 50, 0.6),
+    8px 8px 0 rgba(25, 15, 45, 0.55),
+    9px 9px 0 rgba(20, 10, 40, 0.5),
+    10px 10px 0 rgba(15, 5, 35, 0.45),
+    /* Shadow for depth */
+    0 12px 24px rgba(0, 0, 0, 0.8),
+    0 20px 40px rgba(0, 0, 0, 0.6),
+    /* Ambient purple reflection from bottom */
+    0 25px 50px rgba(168, 85, 247, 0.15);
+  /* Add subtle inner glow for bevelled edge effect */
+  filter: drop-shadow(0 0 3px rgba(192, 132, 252, 0.3));
   opacity: 0;
   transform: translate3d(0, 0, 0);
   will-change: transform, opacity, filter, font-size;
@@ -126,7 +165,7 @@ html.intro-done .cinematic-intro {
 }
 
 .intro-letter.is-falling {
-  animation: letterFall 0.95s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation: letterFall 1.35s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
   animation-delay: var(--fall-delay, 0s);
 }
 
@@ -135,18 +174,18 @@ html.intro-done .cinematic-intro {
     transform: translate3d(var(--x), calc(var(--y) - 115vh), 0);
     opacity: 0;
   }
-  50% {
+  45% {
     opacity: 1;
   }
-  72% {
-    transform: translate3d(var(--x), calc(var(--y) + 0.045em), 0);
+  68% {
+    transform: translate3d(var(--x), calc(var(--y) + 0.04em), 0);
     opacity: 1;
   }
-  84% {
-    transform: translate3d(var(--x), calc(var(--y) - 0.028em), 0);
+  80% {
+    transform: translate3d(var(--x), calc(var(--y) - 0.025em), 0);
   }
-  93% {
-    transform: translate3d(var(--x), calc(var(--y) + 0.01em), 0);
+  90% {
+    transform: translate3d(var(--x), calc(var(--y) + 0.008em), 0);
   }
   100% {
     transform: translate3d(var(--x), var(--y), 0);
@@ -161,10 +200,50 @@ html.intro-done .cinematic-intro {
 
 .intro-letter.is-settled-title {
   font-weight: 600;
+  color: #f8f6ff;
+  /* Enhanced 3D metallic effect for settled PORTFOLIO title */
+  background: linear-gradient(
+    180deg,
+    #4a4a5a 0%,
+    #2a2a3e 15%,
+    #353545 30%,
+    #2a2a3e 50%,
+    #353545 70%,
+    #2a2a3e 85%,
+    #4a4a5a 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   text-shadow:
-    0 0 20px rgba(168, 85, 247, 0.7),
-    0 0 60px rgba(139, 92, 246, 0.45),
-    0 0 100px rgba(124, 58, 237, 0.25);
+    /* Sharp front face */
+    0 0 1px rgba(255, 255, 255, 0.95),
+    0 0 2px rgba(255, 255, 255, 0.7),
+    0 -1px 0 rgba(255, 255, 255, 0.35),
+    /* Stronger purple glow for title */
+    0 0 25px rgba(168, 85, 247, 0.75),
+    0 0 50px rgba(139, 92, 246, 0.55),
+    0 0 80px rgba(124, 58, 237, 0.35),
+    0 0 120px rgba(168, 85, 247, 0.2),
+    /* 3D extrusion - slightly deeper for prominence */
+    1px 1px 0 rgba(65, 55, 85, 0.95),
+    2px 2px 0 rgba(60, 50, 80, 0.9),
+    3px 3px 0 rgba(55, 45, 75, 0.85),
+    4px 4px 0 rgba(50, 40, 70, 0.8),
+    5px 5px 0 rgba(45, 35, 65, 0.75),
+    6px 6px 0 rgba(40, 30, 60, 0.7),
+    7px 7px 0 rgba(35, 25, 55, 0.65),
+    8px 8px 0 rgba(30, 20, 50, 0.6),
+    9px 9px 0 rgba(25, 15, 45, 0.55),
+    10px 10px 0 rgba(20, 10, 40, 0.5),
+    11px 11px 0 rgba(15, 5, 35, 0.45),
+    /* Enhanced shadow */
+    0 14px 28px rgba(0, 0, 0, 0.85),
+    0 24px 48px rgba(0, 0, 0, 0.65),
+    /* Strong purple ambient reflection */
+    0 30px 60px rgba(168, 85, 247, 0.2),
+    0 40px 80px rgba(139, 92, 246, 0.1);
+  filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.4));
 }
 
 /* Curtain slides down, revealing portfolio top → bottom */

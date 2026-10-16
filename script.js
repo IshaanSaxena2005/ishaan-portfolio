@@ -333,8 +333,8 @@
         el.addEventListener('animationend', onEnd);
       });
       // Fallback: last delay + duration + buffer
-      const lastDelay = 0.22 + (els.length - 1) * 0.12;
-      trackTimeout(done, (lastDelay + 1.05) * 1000);
+      const lastDelay = 0.25 + (els.length - 1) * 0.16;
+      trackTimeout(done, (lastDelay + 1.45) * 1000);
     });
   }
 
@@ -360,7 +360,7 @@
    */
   function runMorph(fromEls, fromSlots, toSlots, plan) {
     return new Promise((resolve) => {
-      const duration = 3200;
+      const duration = 3600;
       const actors = [];
 
       // Moving / morphing letters from ISHAAN
@@ -383,7 +383,7 @@
         const cp1y = startY + dy * 0.15 + ny * arc * 0.6;
         const cp2x = startX + dx * 0.75 + nx * arc * 0.35;
         const cp2y = startY + dy * 0.85 + ny * arc * 0.25;
-        const delay = idx * 55;
+        const delay = idx * 65;
 
         el.classList.remove('is-falling');
         el.classList.add('is-morphing');
@@ -431,7 +431,7 @@
             endSize: to.fontSize,
             endW: to.w,
             delay: duration * 0.55,
-            duration: duration * 0.35,
+            duration: duration * 0.4,
           });
           return;
         }
@@ -482,8 +482,8 @@
           startSize: to.fontSize * 0.45,
           endSize: to.fontSize,
           endW: to.w,
-          delay: 380 + idx * 90,
-          duration: duration - 380 - idx * 40,
+          delay: 420 + idx * 100,
+          duration: duration - 420 - idx * 45,
         });
       });
 
@@ -625,19 +625,19 @@
       const el = createLetterEl(slot.char, slot.fontSize, slot.x, slot.y, {
         w: slot.w,
       });
-      el.style.setProperty('--fall-delay', `${0.18 + i * 0.12}s`);
+      el.style.setProperty('--fall-delay', `${0.25 + i * 0.16}s`);
       el.classList.add('is-falling');
       return el;
     });
     lettersRoot.setAttribute('aria-label', FROM_WORD);
 
     await waitForFall(fromEls);
-    await wait(420); // brief hold on ISHAAN
+    await wait(550); // brief hold on ISHAAN
 
     // STAGE 2 — continuous letter morph into THE PORTFOLIO
     const plan = buildMorphPlan(fromSlots, toSlots);
     await runMorph(fromEls, fromSlots, toSlots, plan);
-    await wait(650); // hold THE PORTFOLIO
+    await wait(750); // hold THE PORTFOLIO
 
     // STAGE 3 — curtain reveal
     intro.classList.add('stage-reveal');
