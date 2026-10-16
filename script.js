@@ -68,14 +68,16 @@
   }
 
   function getTitleFontSize() {
+    // PORTFOLIO should be the same size as ISHAAN for visual prominence
     const w = window.innerWidth;
-    if (w < 480) return Math.max(18, w * 0.055);
-    if (w < 768) return Math.min(34, w * 0.052);
-    return Math.min(54, w * 0.045);
+    if (w < 480) return Math.max(42, w * 0.14);
+    if (w < 768) return Math.min(72, w * 0.13);
+    return Math.min(136, w * 0.11);
   }
 
   function getTitleTracking() {
-    return window.innerWidth < 768 ? 0.18 : 0.32;
+    // Tighter spacing for PORTFOLIO (9 letters) to fit at same size as ISHAAN (6 letters)
+    return window.innerWidth < 768 ? 0.08 : 0.12;
   }
 
   /** Measure centered layout for a word; returns [{char,x,y,w,h,fontSize}] */
@@ -356,128 +358,45 @@
   }
 
   /**
-   * Letter-by-letter progressive morph from ISHAAN → PORTFOLIO
-   * Each letter transforms sequentially in a coordinated manner
+   * In-place letter-by-letter morph from ISHAAN → PORTFOLIO
+   * Letters transform at their current position without flying across screen
    */
   function runMorph(fromEls, fromSlots, toSlots, plan) {
     return new Promise((resolve) => {
-      const totalDuration = 3500;
+      const letterInterval = 300; // 300ms between letter changes
+      const morphDuration = 400; // Each letter takes 400ms to transform
       const actors = [];
 
-      // Process moving letters (from ISHAAN to PORTFOLIO positions)
-      plan.moves.forEach((move, idx) => {
-        const el = fromEls[move.fromIndex];
-        const from = fromSlots[move.fromIndex];
-        const to = toSlots[move.toIndex];
+      // Clear all existing letters and recreate them at PORTFOLIO positions
+      // This ensures the word stays centered as it grows from 6 to 9 letters
+      lettersRoot.innerHTML = '';
 
-        el.classList.remove('is-falling');
-        el.classList.add('is-morphing');
-        el.style.animation = 'none';
-        el.style.transform = `translate3d(${from.x}px, ${from.y}px, 0)`;
-        el.style.opacity = '1';
-        el.style.filter = 'none';
-
-        // Calculate smooth curve path
-        const dx = to.x - from.x;
-        const dy = to.y - from.y;
-        const dist = Math.hypot(dx, dy) || 1;
-        const nx = -dy / dist;
-        const ny = dx / dist;
-
-        // Subtle arc for natural movement
-        const arc = 30 + (idx % 2) * 20;
-        const cp1x = from.x + dx * 0.3 + nx * arc;
-        const cp1y = from.y + dy * 0.2 + ny * arc * 0.5;
-        const cp2x = from.x + dx * 0.7 + nx * arc * 0.3;
-        const cp2y = from.y + dy * 0.8;
-
-        // Stagger each letter for progressive effect
-        const delay = idx * 180;
-        const duration = 800;
-
-        actors.push({
-          el,
-          kind: 'move',
-          keepChar: move.keepChar,
-          targetChar: to.char,
-          swapped: false,
-          startX: from.x,
-          startY: from.y,
-          endX: to.x,
-          endY: to.y,
-          cp1x,
-          cp1y,
-          cp2x,
-          cp2y,
-          startSize: from.fontSize,
-          endSize: to.fontSize,
-          endW: to.w,
-          delay,
-          duration,
-        });
-      });
-
-      // Process new letters (fly in from sides)
-      plan.births.forEach((toIndex, idx) => {
-        const to = toSlots[toIndex];
-        if (to.char === ' ') {
-          const el = createLetterEl(' ', to.fontSize, to.x, to.y, { w: to.w });
-          el.style.opacity = '0';
-          el.classList.add('is-settled-title');
-          actors.push({
-            el,
-            kind: 'space',
-            endX: to.x,
-            endY: to.y,
-            endSize: to.fontSize,
-            endW: to.w,
-            delay: plan.moves.length * 180 + idx * 150,
-            duration: 600,
-          });
-          return;
-        }
-
-        // Fly in from alternating sides
-        const fromLeft = idx % 2 === 0;
-        const startX = fromLeft ? -100 : window.innerWidth + 100;
-        const startY = to.y;
-
-        const el = createLetterEl(to.char, to.fontSize * 0.5, startX, startY, {
-          w: to.w,
+      // Create all PORTFOLIO letters initially hidden
+      const toEls = toSlots.map((slot, idx) => {
+        const el = createLetterEl(slot.char, slot.fontSize, slot.x, slot.y, {
+          w: slot.w,
         });
         el.style.opacity = '0';
+        el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0) scale(0.8)`;
+        el.style.filter = 'blur(4px)';
         el.classList.add('is-morphing');
+        return el;
+      });
 
-        const dx = to.x - startX;
-        const dy = to.y - startY;
-        const dist = Math.hypot(dx, dy) || 1;
-        const nx = -dy / dist;
-        const ny = dx / dist;
-        const arc = 40;
-        const cp1x = startX + dx * 0.4 + nx * arc;
-        const cp1y = startY + dy * 0.3 + ny * arc * 0.5;
-        const cp2x = startX + dx * 0.7 + nx * arc * 0.2;
-        const cp2y = startY + dy * 0.8;
-
-        const delay = plan.moves.length * 180 + idx * 150;
-        const duration = 700;
+      // Animate each letter appearing one by one at its final position
+      toEls.forEach((el, idx) => {
+        const slot = toSlots[idx];
+        const delay = idx * letterInterval;
 
         actors.push({
           el,
-          kind: 'birth',
-          startX,
-          startY,
-          endX: to.x,
-          endY: to.y,
-          cp1x,
-          cp1y,
-          cp2x,
-          cp2y,
-          startSize: to.fontSize * 0.5,
-          endSize: to.fontSize,
-          endW: to.w,
+          kind: 'appear',
+          endX: slot.x,
+          endY: slot.y,
+          endSize: slot.fontSize,
+          endW: slot.w,
           delay,
-          duration,
+          duration: morphDuration,
         });
       });
 
@@ -500,79 +419,28 @@
           const rawT = Math.min(1, local / actor.duration);
           if (rawT < 1) allDone = false;
 
-          if (actor.kind === 'space') {
-            const t = easeOutBack(Math.min(1, rawT));
-            actor.el.style.opacity = String(Math.min(1, rawT * 2));
-            actor.el.style.transform = `translate3d(${actor.endX}px, ${actor.endY}px, 0)`;
-            actor.el.style.fontSize = actor.endSize + 'px';
-            actor.el.style.width = actor.endW + 'px';
-            continue;
-          }
+          const t = easeOutBack(rawT);
 
-          const t = easeInOutCubic(rawT);
-          const x = cubicBezierPoint(
-            actor.startX,
-            actor.cp1x,
-            actor.cp2x,
-            actor.endX,
-            t
-          );
-          const y = cubicBezierPoint(
-            actor.startY,
-            actor.cp1y,
-            actor.cp2y,
-            actor.endY,
-            t
-          );
-          const size = lerp(actor.startSize, actor.endSize, t);
-
-          // Subtle motion blur
-          const blur = rawT > 0.1 && rawT < 0.9 ? Math.sin(rawT * Math.PI) * 1.5 : 0;
-          let opacity = 1;
-          if (actor.kind === 'birth') {
-            opacity = Math.min(1, rawT * 2);
-          }
-
-          // Character swap at midpoint
-          if (
-            actor.kind === 'move' &&
-            !actor.keepChar &&
-            !actor.swapped &&
-            rawT >= 0.5
-          ) {
-            actor.swapped = true;
-            actor.el.style.filter = `blur(${Math.max(blur, 4)}px)`;
-            actor.el.textContent = actor.targetChar;
-          }
+          // Animate from small/blurry to full size/crisp
+          const scale = 0.8 + t * 0.2;
+          const blur = 4 * (1 - t);
+          const opacity = Math.min(1, rawT * 2);
 
           actor.el.style.opacity = String(opacity);
-          actor.el.style.fontSize = size + 'px';
-          actor.el.style.width = lerp(
-            actor.kind === 'birth' ? actor.endW * 0.5 : actor.endW,
-            actor.endW,
-            t
-          ) + 'px';
-          actor.el.style.height = size + 'px';
-          actor.el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-          actor.el.style.filter =
-            blur > 0.2 ? `blur(${blur}px)` : actor.swapped && rawT < 0.6
-              ? `blur(${lerp(4, 0, (rawT - 0.5) / 0.1)}px)`
-              : 'none';
+          actor.el.style.transform = `translate3d(${actor.endX}px, ${actor.endY}px, 0) scale(${scale})`;
+          actor.el.style.filter = blur > 0.5 ? `blur(${blur}px)` : 'none';
 
-          // Purple trails during movement
-          if (rawT > 0.05 && rawT < 0.95 && Math.random() > 0.5) {
-            spawnTrail(x + actor.endW / 2, y + size / 2, Math.sin(rawT * Math.PI));
+          // Subtle purple trail during appearance
+          if (rawT > 0.1 && rawT < 0.9 && Math.random() > 0.6) {
+            spawnTrail(actor.endX + actor.endW / 2, actor.endY + actor.endSize / 2, rawT);
           }
 
           if (rawT >= 1) {
-            actor.el.style.transform = `translate3d(${actor.endX}px, ${actor.endY}px, 0)`;
-            actor.el.style.fontSize = actor.endSize + 'px';
-            actor.el.style.width = actor.endW + 'px';
+            actor.el.style.transform = `translate3d(${actor.endX}px, ${actor.endY}px, 0) scale(1)`;
             actor.el.style.filter = 'none';
             actor.el.style.opacity = '1';
             actor.el.classList.add('is-settled-title');
             actor.el.classList.remove('is-morphing');
-            if (actor.targetChar) actor.el.textContent = actor.targetChar;
           }
         }
 
@@ -583,7 +451,8 @@
           morphRaf = null;
           actors.forEach((actor) => {
             actor.el.style.filter = 'none';
-            actor.el.style.opacity = actor.kind === 'space' ? '0' : '1';
+            actor.el.style.opacity = '1';
+            actor.el.style.transform = `translate3d(${actor.endX}px, ${actor.endY}px, 0) scale(1)`;
             actor.el.classList.add('is-settled-title');
           });
           resolve();
@@ -591,13 +460,14 @@
       };
 
       morphRaf = requestAnimationFrame(tick);
+      const totalDuration = toEls.length * letterInterval + morphDuration + 200;
       trackTimeout(() => {
         if (!resolved) {
           resolved = true;
           stopMorph();
           resolve();
         }
-      }, totalDuration + 800);
+      }, totalDuration);
     });
   }
 
