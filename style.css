@@ -331,12 +331,14 @@ html.intro-done .cinematic-intro {
   /* Layered, directional lighting. Every drop-shadow traces the PNG's own
      silhouette, so the light hugs the hair, glasses, shoulders and suit while
      the interior pixels (the face) are never touched:
-       1. cool purple rim from the upper-left  — the key light
-       2. violet bounce from the lower-right    — the fill light
-       3. deep contact shadow to the lower-right — grounds the subject in space */
-  filter: drop-shadow(-6px -8px 18px rgba(196, 151, 255, 0.28))
-    drop-shadow(8px 6px 24px rgba(139, 92, 246, 0.18))
-    drop-shadow(10px 28px 44px rgba(0, 0, 0, 0.62));
+       1. cool purple key rim from the upper-left  — the key light
+       2. violet rim from behind/right             — the rim light
+       3. violet bounce from the lower-right        — the fill light
+       4. deep contact shadow to the lower-right    — grounds the subject in space */
+  filter: drop-shadow(-7px -10px 16px rgba(198, 155, 255, 0.42))
+    drop-shadow(8px -5px 18px rgba(168, 85, 247, 0.26))
+    drop-shadow(10px 8px 26px rgba(139, 92, 246, 0.22))
+    drop-shadow(12px 30px 46px rgba(0, 0, 0, 0.66));
   z-index: 1;
   /* SEAMLESS BLEND — vertical axis.
      The bottom 20% of the bitmap is a solid, full-width opaque block, so this
@@ -385,9 +387,9 @@ html.intro-done .cinematic-intro {
   pointer-events: none;
   background: linear-gradient(
     126deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 0.14) 24%,
-    rgba(255, 255, 255, 0.05) 41%,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.16) 24%,
+    rgba(255, 255, 255, 0.06) 41%,
     rgba(255, 255, 255, 0) 58%
   );
   -webkit-mask-image: radial-gradient(
@@ -417,17 +419,21 @@ html.intro-done .cinematic-intro {
   transform: translateY(-32vh);
 }
 
-/* Fade the intro backdrop away as the portrait travels into the portfolio,
-   so the real circle is visible at the destination. */
+/* Reveal the portfolio only at the hand-off — i.e. once the travelling
+   portrait has landed exactly on the real circle (see runPortraitTravel).
+   Revealing earlier exposed the real .profile-pic while the portrait was
+   still in flight, showing two portraits at once. The timing here is the
+   same 500ms as the travelling portrait's dissolve, so the real circle
+   emerges precisely underneath it: no flicker, no jump. */
 .cinematic-intro.stage-travel {
   background-color: transparent;
-  transition: background-color 0.9s ease;
+  transition: background-color 0.5s ease;
 }
 .cinematic-intro.stage-travel .intro-particles,
 .cinematic-intro.stage-travel .intro-lighting,
 .cinematic-intro.stage-travel .intro-stage {
   opacity: 0;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.5s ease;
 }
 
 @media (max-width: 768px) {

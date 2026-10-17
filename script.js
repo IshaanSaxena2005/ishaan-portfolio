@@ -356,6 +356,17 @@
   }
 
   /**
+   * Focal length for the portrait's 3D transforms. The visible strength of a
+   * perspective (how much the projected box tapers) scales with the box width
+   * divided by this value, so a fixed focal length looks noticeably flatter on
+   * a phone than on a desktop. Shortening it on small screens keeps the depth
+   * reading the same everywhere without rotating anything further.
+   */
+  function depthPerspective() {
+    return Math.round(Math.max(780, Math.min(1150, window.innerWidth * 0.82)));
+  }
+
+  /**
    * STAGE 3 — the portrait materialises LARGE and centred, just below the
    * lifted PORTFOLIO title, with a cinematic 3D entrance, then holds so the
    * viewer can clearly see it. Only the raw PNG silhouette is shown (no circle
@@ -366,6 +377,7 @@
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    const persp = depthPerspective();
     // Substantially larger than before, but always inside the viewport.
     const size = Math.max(240, Math.min(vh * 0.7, vw * 0.92, 740));
     const left = vw / 2 - size / 2;
@@ -380,33 +392,53 @@
     // Lift the settled title so it never overlaps the portrait.
     intro.classList.add('stage-portrait');
 
+    // A tighter perspective + slightly stronger pitch/yaw give the entrance a
+    // genuinely volumetric feel (the projected box visibly tapers and shears)
+    // while the identity end frame keeps the landed portrait perfectly flat.
     const entrance = portraitEl.animate(
       [
         {
           opacity: 0,
           transform:
-            'perspective(1400px) translate3d(0, 54px, -140px) scale(0.88) rotateX(9deg) rotateY(-4deg)',
+            `perspective(${persp}px) translate3d(0, 66px, -230px) scale(0.84) rotateX(12deg) rotateY(-6deg)`,
         },
         {
           opacity: 1,
           transform:
-            'perspective(1400px) translate3d(0, -9px, -10px) scale(1.016) rotateX(-1.8deg) rotateY(1.2deg)',
+            `perspective(${persp}px) translate3d(0, -10px, -16px) scale(1.02) rotateX(-3deg) rotateY(2deg)`,
           offset: 0.7,
         },
         {
           opacity: 1,
           transform:
-            'perspective(1400px) translate3d(0, 0, 0) scale(1) rotateX(0deg) rotateY(0deg)',
+            `perspective(${persp}px) translate3d(0, 0, 0) scale(1) rotateX(0deg) rotateY(0deg)`,
         },
       ],
       { duration: 1050, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
     );
+
+    // The key light lags a few pixels behind the surface, which reads as real
+    // depth without moving the face. It starts and ends at identity, so
+    // cancelling it after the entrance is invisible.
+    const lightEl = portraitEl.querySelector('.intro-portrait-light');
+    let lightAnim = null;
+    if (lightEl) {
+      lightAnim = lightEl.animate(
+        [
+          { transform: 'translate3d(0, 14px, 0)' },
+          { transform: 'translate3d(-7px, -5px, 0)', offset: 0.7 },
+          { transform: 'translate3d(0, 0, 0)' },
+        ],
+        { duration: 1050, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
+      );
+    }
 
     await entrance.finished.catch(() => {});
     commitAnimation(entrance, portraitEl, {
       opacity: '1',
       transform: 'none',
     });
+    if (lightAnim) lightAnim.cancel();
 
     // Hold the large portrait so the viewer can clearly see it.
     await wait(950);
@@ -443,8 +475,10 @@
     portraitEl.style.left = start.left + 'px';
     portraitEl.style.top = start.top + 'px';
 
-    // Reveal the portfolio beneath the overlay as the portrait flies in.
-    intro.classList.add('stage-travel');
+    // The intro backdrop deliberately STAYS OPAQUE for the whole flight.
+    // Revealing the portfolio any earlier would expose the real .profile-pic
+    // while this portrait is still in the air — i.e. two portraits on screen
+    // at once. The reveal is deferred to the hand-off further down.
 
     const dest = target.getBoundingClientRect();
     const scale = dest.width / start.width;
@@ -452,26 +486,27 @@
     const dy = dest.top + dest.height / 2 - (start.top + start.height / 2);
     const duration = 1700;
     const easing = 'cubic-bezier(0.4, 0, 0.2, 1)';
+    const persp = depthPerspective();
 
     // Scale shrinks in even steps across the whole flight (never a sudden
-    // drop at the end), with a gentle arc and a subtle 3D lean for depth.
-    // The flight also gains a yaw sway, a slight pitch and a negative-Z arc so
-    // the portrait reads as receding through space rather than sliding flat.
-    // Every 3D term is 0 at p = 0 and p = 1, so the departure box and the
-    // landing box stay mathematically exact.
-    const arc = Math.min(64, Math.abs(dy) * 0.12 + 26);
+    // drop at the end), with a deeper arc, a stronger yaw sway, a slight pitch
+    // and a larger negative-Z recession so the portrait reads as travelling
+    // through space rather than sliding flat. Roll is intentionally left at
+    // zero so the face never tips sideways. Every 3D term is 0 at p = 0 and
+    // p = 1, so the departure box and the landing box stay mathematically exact.
+    const arc = Math.min(96, Math.abs(dy) * 0.16 + 40);
     const stops = [0, 0.32, 0.66, 1];
     const frames = stops.map((p) => {
       const s = 1 + (scale - 1) * p;
       const x = dx * p;
       const y = dy * p - Math.sin(Math.PI * p) * arc;
       const sway = Math.sin(Math.PI * p);
-      const lean = -6.5 * sway;
-      const tilt = 3.5 * sway;
-      const depth = -70 * sway;
+      const lean = -9 * sway;
+      const tilt = 5 * sway;
+      const depth = -120 * sway;
       return {
         offset: p,
-        transform: `perspective(1400px) translate3d(${x}px, ${y}px, ${depth}px) rotateX(${tilt}deg) rotateY(${lean}deg) scale(${s})`,
+        transform: `perspective(${persp}px) translate3d(${x}px, ${y}px, ${depth}px) rotateX(${tilt}deg) rotateY(${lean}deg) scale(${s})`,
       };
     });
 
@@ -480,6 +515,22 @@
       easing,
       fill: 'forwards',
     });
+
+    // Counter-parallax on the key light through the flight — the highlight
+    // trails the surface, which sells the depth of the movement. Identity at
+    // both ends, so cancelling it after landing changes nothing.
+    const lightEl = portraitEl.querySelector('.intro-portrait-light');
+    let travelLightAnim = null;
+    if (lightEl) {
+      travelLightAnim = lightEl.animate(
+        [
+          { transform: 'translate3d(0, 0, 0)' },
+          { transform: 'translate3d(11px, 7px, 0)', offset: 0.5 },
+          { transform: 'translate3d(0, 0, 0)' },
+        ],
+        { duration, easing, fill: 'forwards' }
+      );
+    }
 
     // The image itself rounds into the circle only as it arrives, matching the
     // existing .profile-pic exactly. It stays a full, uncropped photo while large.
@@ -506,14 +557,19 @@
       top: dest.top + 'px',
       transform: 'none',
     });
+    if (travelLightAnim) travelLightAnim.cancel();
     if (portraitImg) portraitImg.style.borderRadius = '50%';
     if (shapeAnim) shapeAnim.cancel();
 
-    // Hand-off: cross-fade the travelling portrait onto the real circle sitting
-    // beneath it (same image, same spot) so there is no flicker or duplicate.
+    // HAND-OFF — the travelling portrait now sits exactly on top of the real
+    // circle: same image, same box, pixel-coincident. Reveal the portfolio and
+    // dissolve the temporary portrait in lockstep. Because the real circle
+    // appears *underneath* the temporary one (never beside it), there is no
+    // flicker, no jump and no frame in which two portraits are visible.
+    intro.classList.add('stage-travel');
     const fade = portraitEl.animate([{ opacity: '1' }, { opacity: '0' }], {
-      duration: 320,
-      easing: 'ease-out',
+      duration: 500,
+      easing: 'ease-in-out',
       fill: 'forwards',
     });
     await fade.finished.catch(() => {});
