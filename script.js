@@ -392,8 +392,11 @@
    */
   function runMorph(fromEls, fromSlots, toSlots, plan) {
     return new Promise((resolve) => {
-      const changeInterval = 190; // 190ms between character changes (faster)
-      const flipDuration = 190; // Each character flip takes 190ms (faster)
+      // Each character keeps the same 190ms 3D flip, but the dead pause
+      // between characters is removed so the whole morph reads as one
+      // continuous flow (~1.8s total instead of ~3.2s).
+      const changeInterval = 11; // 11ms breather between character flips
+      const flipDuration = 190; // Each character flip takes 190ms (unchanged)
 
       // Define the transformation sequence
       const wordSequence = [
