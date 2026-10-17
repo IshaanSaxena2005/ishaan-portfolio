@@ -261,6 +261,39 @@ html.intro-done .cinematic-intro {
   z-index: 4;
   transform-style: preserve-3d;
   will-change: transform, opacity;
+  /* SEAMLESS BLEND — horizontal axis.
+     The source bitmap is a square whose lower ~20% is a fully opaque,
+     edge-to-edge block, so the raw PNG reads as a rectangle. This mask
+     dissolves the left/right edges into the dark background while the whole
+     central column (hair, face, glasses, suit) stays at full opacity.
+     Percentages resolve against this element's own box, so the mask scales
+     and travels together with the portrait. no-repeat is required so the mask
+     never tiles outside the box (which would leak the image's drop-shadow
+     back in past the faded edges). */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.4) 6%,
+    rgba(0, 0, 0, 0.8) 12%,
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0.8) 88%,
+    rgba(0, 0, 0, 0.4) 94%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.4) 6%,
+    rgba(0, 0, 0, 0.8) 12%,
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0.8) 88%,
+    rgba(0, 0, 0, 0.4) 94%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 /* The intro portrait shows ONLY the original PNG — no circle frame, border,
@@ -279,6 +312,32 @@ html.intro-done .cinematic-intro {
   filter: drop-shadow(0 26px 48px rgba(0, 0, 0, 0.62))
     drop-shadow(0 0 34px rgba(168, 85, 247, 0.16));
   z-index: 1;
+  /* SEAMLESS BLEND — vertical axis.
+     The bottom 20% of the bitmap is a solid, full-width opaque block, so this
+     dissolves the lower edge (shoulders / suit) into the background over a long
+     gradient, ending at fully transparent so no straight horizontal boundary
+     can survive. Everything above 80% height stays at full opacity, keeping the
+     head, hair, glasses and features perfectly sharp. */
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0.82) 86%,
+    rgba(0, 0, 0, 0.56) 91%,
+    rgba(0, 0, 0, 0.3) 96%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0.82) 86%,
+    rgba(0, 0, 0, 0.56) 91%,
+    rgba(0, 0, 0, 0.3) 96%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 /* Lift the settled PORTFOLIO title while the portrait appears below it.
