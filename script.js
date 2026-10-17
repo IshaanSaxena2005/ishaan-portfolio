@@ -385,18 +385,18 @@
         {
           opacity: 0,
           transform:
-            'perspective(1500px) translate3d(0, 46px, -80px) scale(0.9) rotateX(7deg) rotateY(-8deg)',
+            'perspective(1500px) translate3d(0, 46px, -80px) scale(0.9) rotateX(7deg)',
         },
         {
           opacity: 1,
           transform:
-            'perspective(1500px) translate3d(0, -8px, 0) scale(1.014) rotateX(-1.5deg) rotateY(2deg)',
+            'perspective(1500px) translate3d(0, -8px, 0) scale(1.014) rotateX(-1.5deg)',
           offset: 0.7,
         },
         {
           opacity: 1,
           transform:
-            'perspective(1500px) translate3d(0, 0, 0) scale(1) rotateX(0deg) rotateY(0deg)',
+            'perspective(1500px) translate3d(0, 0, 0) scale(1) rotateX(0deg)',
         },
       ],
       { duration: 650, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
@@ -619,10 +619,10 @@
       function relayout(word, fontSize, trackingEm, flipIndex) {
         const slots = measureWordLayout(word, fontSize, trackingEm);
         const halfDuration = flipDuration / 2;
+        const fromSlot = flipIndex == null ? null : laid[flipIndex];
 
         slots.forEach((slot, idx) => {
           let el = els[idx];
-          let isNew = false;
           if (!el) {
             // Newly appended letter (…L -> …LI -> …LIO).
             el = createLetterEl(slot.char, slot.fontSize, slot.x, slot.y, {
@@ -630,75 +630,27 @@
             });
             el.classList.add('is-settled-title');
             els[idx] = el;
-            isNew = true;
           }
 
-          // A letter that is INSERTED shifts every glyph after it (PORHAAN
-          // inserts "R" at index 2, so the H/A/N behind it each read a new
-          // character). Those shifted glyphs must go through the same invisible
-          // flip as the one named by flipIndex — writing their new character in
-          // the visible branch swapped two readable letters mid-air.
-          const glyph = el.textContent === '\u00A0' ? ' ' : el.textContent;
-          const swaps = glyph !== slot.char && slot.char !== ' ';
-
-          if (idx === flipIndex || swaps) {
-            // The glyph turns edge-on while sliding to the midpoint of its
-            // old→new slot, swaps its letter while it is both edge-on and
-            // invisible, then flies on to the new slot as it turns back into
-            // view — so the swap is never visible and the letter arrives with
-            // the rest of the row.
-            const fromX = laid[idx] ? laid[idx].x : slot.x;
-            // Turn edge-on at the MIDPOINT of the old→new slot, not at the old
-            // slot. The rest of the row slides immediately, so holding at the old
-            // x left the flipping glyph half a step behind: it then had to cover
-            // the whole shift inside its 95ms fly-back, catching the neighbour
-            // only at the last frame (measured on mobile: the PORHAAN "H" cut
-            // 7.3px into the "A"). Settling at the midpoint while it is invisible
-            // halves that gap and brings it home in step with the row.
-            const midX = fromX + (slot.x - fromX) / 2;
-            el.style.transition = `transform ${halfDuration}ms ease-in, opacity ${halfDuration}ms ease-in-out`;
-            el.style.transform = `translate3d(${midX}px, ${slot.y}px, 0) rotateX(90deg)`;
+          if (idx === flipIndex) {
+            // The previous glyph turns edge-on where it already stands, swaps
+            // its letter while it is both edge-on and invisible, then flies to
+            // its new slot as it turns back into view — so the swap is never
+            // visible and the letter arrives with the rest of the row.
+            el.style.transition = `transform ${halfDuration}ms ease-in-out, opacity ${halfDuration}ms ease-in-out`;
+            el.style.transform = `translate3d(${fromSlot ? fromSlot.x : slot.x}px, ${slot.y}px, 0) rotateX(90deg)`;
             el.style.opacity = '0';
 
             setTimeout(() => {
-              // Guarantee the old glyph is fully invisible at the exact instant
-              // it is rewritten. The opacity leg runs on the animation clock,
-              // which lags wall-clock whenever a frame is slow (measured: the
-              // transition was only 66ms into its 95ms when this timer fired,
-              // so 0.19-0.46 of the OLD letter was still painted as it changed).
-              // Snapping through a no-transition flush first removes all
-              // dependence on frame pacing; at 60fps the leg has already reached
-              // ~0 here, so this is imperceptible in a real browser.
-              el.style.transition = 'none';
-              el.style.opacity = '0';
-              el.offsetWidth; // flush the invisible state before the swap
               el.textContent = slot.char;
               el.style.width = slot.w + 'px';
-              // Second leg eases OUT, not in-out. The row slides the whole
-              // old→new span over the full 190ms ease-in-out, so by the time
-              // this glyph starts flying (halfway) the row is already past the
-              // midpoint and accelerating away. An ease-out leg covers the
-              // remaining distance on the same schedule as that tail — the two
-              // trajectories stay within ~0.03 of a glyph apart instead of the
-              // glyph arriving a frame late onto its neighbour.
-              el.style.transition = `transform ${halfDuration}ms ease-out, opacity ${halfDuration}ms ease-in-out`;
               el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0) rotateX(0deg)`;
               el.style.opacity = '1';
             }, halfDuration);
           } else {
-            // A brand-new letter dropped straight onto its final slot landed on
-            // top of the row's previous last glyph, which has not slid out of the
-            // way yet — PORHAAN's trailing "N" overlapped the old "N" by 60px.
-            // Start it at the continuation of the OLD row and slide it in with
-            // everything else, so the gap stays constant.
-            const prevSlot = laid[laid.length - 1];
-            if (isNew && prevSlot) {
-              el.style.transition = 'none';
-              el.style.transform = `translate3d(${prevSlot.x + prevSlot.w + fontSize * trackingEm}px, ${slot.y}px, 0)`;
-              el.offsetWidth; // flush the start position so it can transition
-            }
             el.style.transition = `transform ${flipDuration}ms ease-in-out`;
             el.style.transform = `translate3d(${slot.x}px, ${slot.y}px, 0)`;
+            el.textContent = slot.char;
             el.style.opacity = '1';
           }
         });
@@ -756,13 +708,9 @@
           }
         }
 
-        // Final pass: ease the settled PORTFOLIO glyphs out to the product's
-        // tighter tracking. Sliding the existing glyphs (instead of rebuilding
-        // the row with renderWord) keeps the spacing continuous — a rebuild
-        // switched every gap 13.6px -> 16.3px within a single frame and briefly
-        // overlapped the T/F ink.
+        // Final render with tighter tracking for PORTFOLIO
         const finalTracking = window.innerWidth < 768 ? 0.08 : 0.12;
-        relayout(TO_WORD, fontSize, finalTracking);
+        renderWord(TO_WORD, fontSize, finalTracking);
         lettersRoot.setAttribute('aria-label', TO_WORD);
 
         resolve();
