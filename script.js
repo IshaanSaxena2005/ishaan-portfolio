@@ -854,6 +854,14 @@ window.addEventListener('scroll', () => {
    One rAF loop runs per card and only while that card is being animated.
    Skipped entirely for prefers-reduced-motion and for touch-only pointers.
    The cinematic intro is not touched by any of this.
+
+   data-tilt-lift="<px>" is opt-in and currently only set on the
+   certification cards. It adds a real translateZ toward the viewer on
+   hover ("pick the certificate up and bring it closer"). The perspective
+   stays on the card itself: giving .cert-container a shared perspective
+   projects the existing translateZ layers of .cert-header / .cert-issuer /
+   .cert-desc even at rest, which measurably magnified and displaced the
+   card's own content before any hover happened.
    ======================================== */
 (function initTiltCards() {
   const cards = document.querySelectorAll('[data-tilt]');
@@ -872,30 +880,43 @@ window.addEventListener('scroll', () => {
     const rotateXOnly = axis === 'x';  // data-tilt-axis="x"  -> rotateX only
     const rotateYOnly = axis === 'y';  // data-tilt-axis="y"  -> rotateY only
 
+    // Opt-in travel toward the viewer. The perspective stays on the card
+    // itself so the resting layout is untouched; a shared parent perspective
+    // would project this card's translateZ layers even with no hover.
+    const lift = parseFloat(card.getAttribute('data-tilt-lift')) || 0;
+
     let rect = null;
     let raf = null;
     let active = false;
     let targetX = 0, targetY = 0;   // desired rotation
     let currentX = 0, currentY = 0; // rendered rotation
     let scale = 1, targetScale = 1;
+    let z = 0, targetZ = 0;         // rendered / desired depth
 
     function paint() {
       currentX += (targetX - currentX) * EASE;
       currentY += (targetY - currentY) * EASE;
       scale += (targetScale - scale) * EASE;
+      z += (targetZ - z) * EASE;
 
       const settledX = Math.abs(targetX - currentX) < 0.02;
       const settledY = Math.abs(targetY - currentY) < 0.02;
       const settledS = Math.abs(targetScale - scale) < 0.002;
+      const settledZ = Math.abs(targetZ - z) < 0.5;
       if (settledX) currentX = targetX;
       if (settledY) currentY = targetY;
       if (settledS) scale = targetScale;
+      if (settledZ) z = targetZ;
 
+      // Order matters: the lift runs first, along the view axis, so the card
+      // genuinely travels toward the viewer before it angles.
       card.style.transform =
-        'perspective(1000px) rotateX(' + currentX.toFixed(3) + 'deg) rotateY(' +
+        'perspective(1000px) ' +
+        (lift > 0 ? 'translateZ(' + z.toFixed(2) + 'px) ' : '') +
+        'rotateX(' + currentX.toFixed(3) + 'deg) rotateY(' +
         currentY.toFixed(3) + 'deg) scale3d(' + scale.toFixed(4) + ',' + scale.toFixed(4) + ',1)';
 
-      if (settledX && settledY && settledS && !active) {
+      if (settledX && settledY && settledS && settledZ && !active) {
         card.classList.remove('is-tilting');
         card.style.transform = '';
         raf = null;
@@ -913,6 +934,7 @@ window.addEventListener('scroll', () => {
       rect = card.getBoundingClientRect();
       active = true;
       targetScale = REST_SCALE;
+      targetZ = lift;
       card.classList.add('is-tilting');
       onMove(e);
     }
@@ -939,6 +961,7 @@ window.addEventListener('scroll', () => {
       targetX = 0;
       targetY = 0;
       targetScale = 1;
+      targetZ = 0;
       run();
     }
 

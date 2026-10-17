@@ -1619,6 +1619,15 @@ html.intro-done .cinematic-intro {
 
 /* ---------------------------------------------------------------------
    4. CERTIFICATION CARDS — layered icon chip + soft inner light
+   Opted in via data-tilt-lift (see script.js): on hover the card travels
+   forward on its own perspective, so it grows AND pushes outward, which
+   reads as a physical object coming toward you rather than a flat card
+   being scaled up. Only the certification cards in the site do this, so
+   their interaction stays distinct from every other card.
+   The perspective deliberately lives on the card itself, NOT on
+   .cert-container: a shared parent perspective would project the existing
+   .cert-header / .cert-issuer / .cert-desc translateZ layers even at rest
+   and visibly magnify the card content before any hover happened.
    --------------------------------------------------------------------- */
 .cert-icon {
   background: linear-gradient(
@@ -1642,6 +1651,30 @@ html.intro-done .cinematic-intro {
       inset 0 1px 0 rgba(255, 255, 255, 0.2),
       inset 0 -1px 0 rgba(0, 0, 0, 0.4),
       0 12px 26px -8px rgba(168, 85, 247, 0.75);
+  }
+
+  /* Hover lighting signature unique to certifications. The shared rule only
+     brightens the border and adds a purple glow; here the frame edge catches
+     more light, the cast shadow drops much further away (the card has left
+     the surface) and the cursor highlight is tighter and whiter, so the
+     lifted certificate reads as a solid lit object. */
+  .certifications .cert-card:hover {
+    border-color: rgba(192, 132, 252, 0.72);
+    box-shadow:
+      0 6px 12px rgba(0, 0, 0, 0.6),
+      0 30px 54px -14px rgba(0, 0, 0, 0.7),
+      0 82px 120px -42px rgba(0, 0, 0, 0.82),
+      0 40px 90px -30px rgba(168, 85, 247, 0.72),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  }
+  .certifications .cert-card::after {
+    background: radial-gradient(
+      240px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(192, 132, 252, 0.18) 32%,
+      rgba(168, 85, 247, 0) 70%
+    );
   }
 }
 
