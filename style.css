@@ -578,6 +578,10 @@ html.intro-done .cinematic-intro {
   display: flex;
   justify-content: center;
   align-items: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 .profile-pic {
   width: 350px;
