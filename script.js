@@ -356,9 +356,9 @@
   }
 
   /**
-   * STAGE 3 — the portrait materialises LARGE and centred, just below the
-   * lifted PORTFOLIO title, with a cinematic 3D entrance, then holds so the
-   * viewer can clearly see it. Only the raw PNG silhouette is shown (no circle
+   * STAGE 3 — the portrait materialises large and centred, just below the
+   * lifted PORTFOLIO title, with a cinematic 3D entrance, then hands straight
+   * over to the travel. Only the raw PNG silhouette is shown (no circle
    * frame/ring) with a restrained depth shadow.
    */
   async function runPortraitReveal() {
@@ -366,8 +366,8 @@
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    // Substantially larger than before, but always inside the viewport.
-    const size = Math.max(240, Math.min(vh * 0.7, vw * 0.92, 740));
+    // 75% of the previous reveal size, but still always inside the viewport.
+    const size = Math.max(180, Math.min(vh * 0.525, vw * 0.69, 555));
     const left = vw / 2 - size / 2;
     // Sit in the lower-centre of the screen, clear of the lifted title.
     const top = Math.max(vh * 0.3, Math.min(vh * 0.32, vh * 0.97 - size));
@@ -399,7 +399,7 @@
             'perspective(1500px) translate3d(0, 0, 0) scale(1) rotateX(0deg)',
         },
       ],
-      { duration: 1050, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
+      { duration: 650, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
     );
 
     await entrance.finished.catch(() => {});
@@ -407,9 +407,6 @@
       opacity: '1',
       transform: 'none',
     });
-
-    // Hold the large portrait so the viewer can clearly see it.
-    await wait(950);
   }
 
   /** Make sure the destination section sits at its final, un-transformed spot. */
@@ -457,15 +454,7 @@
     const dx = dest.left + dest.width / 2 - (start.left + start.width / 2);
     const dy = dest.top + dest.height / 2 - (start.top + start.height / 2);
     const duration = 1700;
-    // Smooth, continuous deceleration with no dead tail. The old curve carried
-    // its second control point to y=1 at 45% of the timeline, so it had already
-    // covered 95% of the distance by 80% of the flight and crawled the last
-    // ~250ms (the "stuck / pauses near the destination" feel). Pulling that
-    // control point out to x=0.7 leaves 12% of the distance in the last 20% of
-    // the flight, so the portrait keeps gliding right up to the frame while
-    // still easing in at the start and decelerating monotonically to a stop at
-    // t=1 (y2=1 means the end velocity is zero — it settles, never snaps).
-    const easing = 'cubic-bezier(0.4, 0, 0.7, 1)';
+    const easing = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
     // Scale shrinks in even steps across the whole flight (never a sudden
     // drop at the end), with a gentle arc and a subtle 3D lean for depth.
@@ -475,17 +464,8 @@
       const s = 1 + (scale - 1) * p;
       const x = dx * p;
       const y = dy * p - Math.sin(Math.PI * p) * arc;
-      // The 3D lean/depth are windowed by sin^2: at full strength through the
-      // middle of the flight, then released early enough that the portrait is
-      // already square-on (≈0.7° of lean, ≈7px of depth at 90% of the flight)
-      // well before it reaches the frame. The previous window still carried
-      // ~6.5° of rotation and ~65px of Z at 88%, so the face visibly had to
-      // square itself up during the final approach — that unwind was the
-      // "awkward rotation at the destination". Nothing is left to unwind at
-      // landing, so the face stays aligned and sharp with no abrupt transform.
-      const wind = Math.pow(Math.sin(Math.PI * p), 2);
-      const lean = -7 * wind;
-      const depth = 70 * wind;
+      const lean = -7 * Math.sin(Math.PI * p);
+      const depth = 70 * Math.sin(Math.PI * p);
       return {
         offset: p,
         transform: `perspective(1500px) translate3d(${x}px, ${y}px, ${depth}px) rotateY(${lean}deg) scale(${s})`,
@@ -526,24 +506,43 @@
     if (portraitImg) portraitImg.style.borderRadius = '50%';
     if (shapeAnim) shapeAnim.cancel();
 
-    // HAND-OFF — one single beat, starting on the touchdown frame. The traveller
-    // is on the frame's exact box and border-radius has now clipped away every
-    // straight bitmap edge, so all that is left of the two blend masks is a
-    // faint dimming of the circle's outer crescents. Retire them (see
-    // .intro-portrait.landed) at the same moment as the reveal instead of as a
-    // separate awaited step before it: the cross-fade then carries that residue,
-    // together with the traveller's slightly different rendering of the photo,
-    // continuously into the real image rather than the portrait sitting
-    // motionless on the frame for an extra ~200ms (the "lingering" at the end of
-    // the flight). The fade also starts on the touchdown frame itself, so there
-    // is no gap between the movement ending and the first visible change. The
-    // traveller is fully opaque on that first frame, so the circle never shows
-    // empty, and .landed's 0.2s mask-size retraction finishes inside the 220ms
-    // fade, so nothing is left to change after it.
+    // Settle the portrait's edge-blend masks while the circle is still EMPTY.
+    // Now that the border-radius clips every straight bitmap edge, the masks only
+    // dim the circle's lower and side crescents; leaving them in place would make
+    // those crescents jump in brightness at the instant the real photo appeared
+    // underneath (measured: ~86 luminance in a single frame). mask-image gradients
+    // cannot be interpolated, so the fades are retracted by stretching mask-size,
+    // which brings every masked pixel to full opacity — the reveal then changes
+    // nothing on screen because the two layers already carry the same pixels.
     portraitEl.classList.add('landed');
+    await new Promise((resolve) => {
+      let settled = false;
+      const done = () => {
+        if (settled) return;
+        settled = true;
+        portraitEl.removeEventListener('transitionend', onEnd);
+        resolve();
+      };
+      const onEnd = (e) => {
+        if (e.target === portraitEl && e.propertyName.indexOf('mask-size') !== -1) {
+          done();
+        }
+      };
+      portraitEl.addEventListener('transitionend', onEnd);
+      trackTimeout(done, 400); // fallback if the transition never reports back
+    });
+
+    // HAND-OFF — the animated portrait has reached the frame's exact box, its
+    // blend masks are fully retracted and its bitmap is rounded into the same
+    // circle, so the two layers now differ only by the frame's 3px border (the
+    // real photo paints its bitmap into that inner content box) and by the
+    // traveller's drop-shadow. Reveal the real portrait and cross-fade the
+    // traveller out over 320ms, so that residual sub-pixel scale difference is
+    // absorbed by the fade instead of being stepped. The traveller is still fully
+    // opaque on the first frame of that fade, so the circle never shows empty.
     if (frame) frame.classList.remove('is-awaiting');
     const fade = portraitEl.animate([{ opacity: '1' }, { opacity: '0' }], {
-      duration: 220,
+      duration: 320,
       easing: 'ease-out',
       fill: 'forwards',
     });

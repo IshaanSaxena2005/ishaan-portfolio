@@ -27,18 +27,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Reserve the vertical scrollbar's gutter for the whole session. While the
-   intro plays the page is scroll-locked (see below), so no scrollbar is shown
-   and the layout is 15px wider; the moment the intro releases that lock the
-   scrollbar appears and every centred element reflows sideways. The portrait
-   lands on the frame's exact coordinates during the intro, so that reflow read
-   as the just-landed portrait jumping out of its frame. Reserving the gutter
-   keeps the layout width — and therefore the landing position — identical
-   before and after the hand-off. */
-html {
-  scrollbar-gutter: stable;
-}
-
 /* Lock scroll while cinematic intro plays */
 html.intro-pending,
 html.intro-pending body,
@@ -381,14 +369,14 @@ html.intro-done .cinematic-intro {
   mask-size: 170% 100%;
   -webkit-mask-position: 50% 0;
   mask-position: 50% 0;
-  transition: -webkit-mask-size 0.2s linear, mask-size 0.2s linear;
+  transition: -webkit-mask-size 0.3s linear, mask-size 0.3s linear;
 }
 .intro-portrait.landed .intro-portrait-img {
   -webkit-mask-size: 100% 130%;
   mask-size: 100% 130%;
   -webkit-mask-position: 0 0;
   mask-position: 0 0;
-  transition: -webkit-mask-size 0.2s linear, mask-size 0.2s linear;
+  transition: -webkit-mask-size 0.3s linear, mask-size 0.3s linear;
 }
 
 /* Lift the settled PORTFOLIO title while the portrait appears below it.
