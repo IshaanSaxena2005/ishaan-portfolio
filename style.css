@@ -1450,3 +1450,543 @@ html.intro-done .cinematic-intro {
     bottom: 5px;
   }
 }
+
+/* =====================================================================
+   PREMIUM 3D LAYER — MAIN PORTFOLIO ONLY
+   Everything below targets the main portfolio UI. The cinematic intro
+   (every rule above) is deliberately untouched.
+   One shared depth language: a single light direction (top-left), the
+   existing purple accent, and consistent elevation / border / shadow
+   values applied through reusable classes and custom properties.
+   ===================================================================== */
+
+:root {
+  /* Elevation tokens — contact shadow, mid shadow, ambient shadow. */
+  --depth-contact: 0 2px 4px rgba(0, 0, 0, 0.5);
+  --depth-mid: 0 12px 26px -8px rgba(0, 0, 0, 0.55);
+  --depth-ambient: 0 34px 64px -24px rgba(0, 0, 0, 0.7);
+  /* Edge light: thin top highlight + dark bottom lip = bevelled surface. */
+  --edge-top-light: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  --edge-bottom-dark: inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  --surface-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --lift-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------------------------------------------------------------------
+   1. SHARED CARD SURFACE
+   The glass (fill + backdrop blur) is moved onto a ::before layer.
+   A backdrop-filter on the card itself forces its 3D rendering context
+   to flatten, which silently disables every translateZ layer inside the
+   card (verified in Chrome). Keeping the blur on a pseudo-element leaves
+   the card a real 3D stage, so layered depth actually renders.
+   --------------------------------------------------------------------- */
+.tilt-card {
+  position: relative;
+  transform-style: preserve-3d;
+}
+.tilt-card.is-tilting {
+  will-change: transform;
+}
+.tilt-card:not(.home-photo) {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow:
+    var(--depth-contact),
+    var(--depth-mid),
+    var(--depth-ambient),
+    var(--edge-top-light),
+    var(--edge-bottom-dark);
+  transition: border-color 0.45s ease, box-shadow 0.5s var(--surface-ease);
+}
+.tilt-card:not(.home-photo)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0) 44%),
+    var(--card-bg);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  backdrop-filter: var(--glass-backdrop);
+}
+
+/* ---------------------------------------------------------------------
+   2. POINTER-RESPONSIVE LIGHTING
+   A soft highlight that follows the cursor across the card surface
+   (--mx / --my are written by script.js). It sits on the surface plane,
+   so the raised layers in section 3 float above it.
+   --------------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  .tilt-card:not(.home-photo)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+    background: radial-gradient(
+      340px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, 0.09) 0%,
+      rgba(192, 132, 252, 0.1) 30%,
+      rgba(168, 85, 247, 0) 68%
+    );
+  }
+  .tilt-card:not(.home-photo):hover::after {
+    opacity: 1;
+  }
+  .tilt-card:not(.home-photo):hover {
+    border-color: rgba(168, 85, 247, 0.55);
+    box-shadow:
+      0 4px 8px rgba(0, 0, 0, 0.55),
+      0 20px 38px -10px rgba(0, 0, 0, 0.62),
+      0 52px 90px -30px rgba(0, 0, 0, 0.75),
+      0 30px 74px -26px rgba(168, 85, 247, 0.6),
+      var(--edge-top-light),
+      var(--edge-bottom-dark);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   3. LAYERED DEPTH (translateZ)
+   Only static content groups are raised — interactive controls keep their
+   own hover transforms. At rest the cards are un-rotated, so these layers
+   are visually identical to the previous flat layout; they only separate
+   once the card tilts.
+   --------------------------------------------------------------------- */
+.skill-card > .card-header {
+  transform: translateZ(38px);
+}
+.skill-card > .skill-list,
+.skill-card > .radial-bars {
+  transform: translateZ(22px);
+}
+.cert-card > .cert-header {
+  transform: translateZ(34px);
+}
+.cert-card > .cert-issuer {
+  transform: translateZ(22px);
+}
+.cert-card > .cert-desc {
+  transform: translateZ(14px);
+}
+.project-showcase-card > .project-img-wrapper {
+  transform: translateZ(26px);
+}
+.project-showcase-card > .project-info {
+  transform: translateZ(34px);
+}
+.timeline-item > .timeline-content {
+  transform: translateZ(30px);
+}
+.timeline-item > .timeline-dot {
+  transform: translateZ(40px);
+}
+.edu-item > .edu-card {
+  transform: translateZ(30px);
+}
+.about-img > .About-photo {
+  transform: translateZ(24px);
+}
+
+/* Smooth, consistent response for every raised layer. */
+.skill-card > .card-header,
+.cert-card > .cert-header,
+.project-showcase-card > .project-info,
+.timeline-item > .timeline-content,
+.edu-item > .edu-card {
+  transition: transform 0.5s var(--surface-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .skill-card:hover > .card-header {
+    transform: translateZ(54px);
+  }
+  .cert-card:hover > .cert-header {
+    transform: translateZ(50px);
+  }
+  .project-showcase-card:hover > .project-info {
+    transform: translateZ(48px);
+  }
+  .about-img:hover > .About-photo {
+    transform: translateZ(38px);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   4. CERTIFICATION CARDS — layered icon chip + soft inner light
+   --------------------------------------------------------------------- */
+.cert-icon {
+  background: linear-gradient(
+    150deg,
+    rgba(168, 85, 247, 0.26) 0%,
+    rgba(168, 85, 247, 0.06) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+    0 8px 18px -8px rgba(168, 85, 247, 0.6);
+  transition: transform 0.5s var(--surface-ease), box-shadow 0.5s ease;
+}
+.cert-icon i {
+  filter: drop-shadow(0 2px 6px rgba(168, 85, 247, 0.5));
+}
+@media (hover: hover) and (pointer: fine) {
+  .cert-card:hover .cert-icon {
+    transform: translateZ(34px) scale(1.06);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+      0 12px 26px -8px rgba(168, 85, 247, 0.75);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   5. PROJECT CARDS — thumbnail set into the surface
+   --------------------------------------------------------------------- */
+.project-img-wrapper {
+  box-shadow:
+    0 14px 34px -16px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+.project-img-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 52%,
+    rgba(0, 0, 0, 0.42) 100%
+  );
+}
+.project-overlay {
+  z-index: 2;
+}
+
+/* ---------------------------------------------------------------------
+   6. TIMELINE + EDUCATION markers
+   --------------------------------------------------------------------- */
+.timeline-dot {
+  box-shadow:
+    0 0 0 4px rgba(168, 85, 247, 0.1),
+    0 0 14px rgba(168, 85, 247, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition: transform 0.5s var(--surface-ease);
+}
+.edu-dot {
+  box-shadow:
+    0 0 0 4px rgba(168, 85, 247, 0.1),
+    0 0 14px rgba(168, 85, 247, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* ---------------------------------------------------------------------
+   7. BUTTONS, CONTROLS AND SMALL INTERACTIONS
+   Real press feedback: a shallow lift on hover, a small compression on
+   :active, one consistent easing for the whole site.
+   --------------------------------------------------------------------- */
+.btn-box,
+.btn-demo,
+.btn-github,
+.btn-cert,
+.contact-form .send {
+  position: relative;
+  z-index: 2;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+  transition:
+    transform 0.3s var(--lift-ease),
+    box-shadow 0.35s ease,
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+.btn-box:focus-visible,
+.btn-demo:focus-visible,
+.btn-github:focus-visible,
+.btn-cert:focus-visible,
+.contact-form .send:focus-visible,
+.navbar a:focus-visible {
+  outline: 2px solid rgba(192, 132, 252, 0.8);
+  outline-offset: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-box:hover,
+  .btn-cert:hover,
+  .contact-form .send:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 10px 22px -8px rgba(168, 85, 247, 0.6),
+      0 0 22px -4px rgba(168, 85, 247, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  }
+  .btn-demo:hover,
+  .btn-github:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 10px 20px -8px rgba(0, 0, 0, 0.75),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+}
+.btn-box:active,
+.btn-demo:active,
+.btn-github:active,
+.btn-cert:active,
+.contact-form .send:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Contact list icons */
+.contact-list i {
+  filter: drop-shadow(0 2px 6px rgba(168, 85, 247, 0.45));
+}
+.contact-list div {
+  transition: transform 0.35s var(--lift-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .contact-list div:hover {
+    transform: translateX(4px);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   8. NAVIGATION — thin lit edge + underline glow on the active link
+   --------------------------------------------------------------------- */
+.header {
+  box-shadow: 0 12px 34px -18px rgba(0, 0, 0, 0.9);
+}
+.navbar a {
+  position: relative;
+}
+.navbar a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.35s var(--surface-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .navbar a:hover::after {
+    transform: scaleX(1);
+  }
+}
+.navbar a.active::after {
+  transform: scaleX(1);
+}
+
+/* ---------------------------------------------------------------------
+   9. BACKGROUND SEPARATION
+   A darker vignette on the video plane and a restrained ambient purple
+   wash per section. Both sit behind the content and only add depth —
+   they never touch text contrast.
+   --------------------------------------------------------------------- */
+.video-background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 78% 68% at 50% 42%,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.4) 72%,
+    rgba(0, 0, 0, 0.72) 100%
+  );
+}
+.home,
+.about,
+.skills-section,
+.projects,
+.experience,
+.certifications,
+.education,
+.contact {
+  position: relative;
+  isolation: isolate;
+}
+.home::before,
+.about::before,
+.skills-section::before,
+.projects::before,
+.experience::before,
+.certifications::before,
+.education::before,
+.contact::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 52% 40% at 12% 0%, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0) 70%),
+    radial-gradient(ellipse 44% 36% at 90% 100%, rgba(124, 58, 237, 0.08) 0%, rgba(124, 58, 237, 0) 72%);
+}
+
+/* Profile ring — accent the existing glow with a layered rim light.
+   The container itself stays fully transparent (transparent PNG). */
+.profile-pic {
+  box-shadow:
+    0 0 0 1px rgba(192, 132, 252, 0.25),
+    0 0 30px rgba(168, 85, 247, 0.42),
+    0 0 62px rgba(236, 72, 153, 0.18),
+    0 26px 50px -22px rgba(0, 0, 0, 0.85);
+}
+.About-photo {
+  box-shadow:
+    0 0 0 1px rgba(192, 132, 252, 0.22),
+    0 18px 34px -18px rgba(0, 0, 0, 0.9),
+    0 0 26px -6px rgba(168, 85, 247, 0.45);
+}
+
+/* ---------------------------------------------------------------------
+   10. CONTACT FORM — inset fields, lit focus state
+   --------------------------------------------------------------------- */
+.contact-form input,
+.contact-form textarea {
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s var(--lift-ease);
+}
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 3px rgba(168, 85, 247, 0.16),
+    0 14px 28px -16px rgba(168, 85, 247, 0.65),
+    inset 0 2px 5px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------------------------------------------------------------------
+   11. TYPOGRAPHY — depth without tilt (headings stay perfectly readable)
+   --------------------------------------------------------------------- */
+.sub-title {
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.55),
+    0 10px 26px rgba(0, 0, 0, 0.75);
+}
+.home-content h1,
+.about-text h2 {
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.5),
+    0 14px 34px rgba(0, 0, 0, 0.8);
+}
+.last-text {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* ---------------------------------------------------------------------
+   12. RESPONSIVE HARDENING
+   Grid tracks can no longer be wider than their container (this was the
+   source of the mobile horizontal overflow), and the fixed-size About
+   portrait now scales down inside its column.
+   --------------------------------------------------------------------- */
+.skills-container {
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+}
+.cert-container {
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+}
+.skill-card,
+.cert-card,
+.project-showcase-card,
+.timeline-item,
+.edu-item,
+.about-img {
+  min-width: 0;
+}
+.cert-header h3 {
+  overflow-wrap: anywhere;
+}
+.About-photo {
+  width: min(350px, 100%);
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+/* Touch / narrow layouts: the project links live inside a hover-only
+   overlay, so they get a permanent, readable home above the thumbnail. */
+@media (hover: none), (max-width: 1024px) {
+  .project-overlay {
+    opacity: 1;
+    align-items: flex-end;
+    padding-bottom: 18px;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.9) 0%,
+      rgba(0, 0, 0, 0.5) 40%,
+      rgba(0, 0, 0, 0) 74%
+    );
+  }
+}
+
+@media (max-width: 768px) {
+  .cert-container {
+    grid-template-columns: 1fr;
+  }
+  .cert-card {
+    height: auto;
+    min-height: 340px;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   13. MOTION PREFERENCES
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .tilt-card,
+  .tilt-card:not(.home-photo)::after,
+  .cert-icon,
+  .btn-box,
+  .btn-demo,
+  .btn-github,
+  .btn-cert,
+  .contact-form .send,
+  .home-sci a,
+  .contact-list div,
+  .navbar a::after,
+  .progress,
+  .contact-form input,
+  .contact-form textarea {
+    transition: none !important;
+  }
+  .tilt-card:not(.home-photo)::after {
+    display: none;
+  }
+  .tilt-card > *,
+  .cert-icon {
+    transform: none !important;
+  }
+  /* Pre-existing scroll-reveal / progress animations: snap straight to the
+     final state instead of animating (all values stay fully visible). */
+  .reveal,
+  .reveal.active .progress,
+  .reveal.active .progress-bar-circle,
+  .reveal.active .path,
+  .reveal.active .radial-bar .percentage,
+  .reveal.active .radial-bar .text {
+    transition-duration: 0.001s !important;
+    animation-duration: 0.001s !important;
+    animation-delay: 0s !important;
+    transition-delay: 0s !important;
+  }
+}

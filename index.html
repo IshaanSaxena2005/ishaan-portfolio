@@ -10,8 +10,6 @@
       rel="stylesheet"
     />
     <script src="https://unpkg.com/typed.js@2.0.15/dist/typed.umd.js"></script>
-    <!-- Vanilla Tilt for 3D interactions -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
     <script>
       // Cover page immediately so the portfolio never flashes before the intro
       document.documentElement.classList.add('intro-pending');
@@ -93,7 +91,7 @@
     </section>
 
     <section class="about reveal" id="about">
-      <div class="about-img tilt-card">
+      <div class="about-img tilt-card" data-tilt data-tilt-max="6" data-tilt-max-glare="0.15">
         <img src="My-Photo.png" alt="My Photo" class="About-photo" />
       </div>
       <div class="about-text">

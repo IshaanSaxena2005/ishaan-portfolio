@@ -834,3 +834,109 @@ window.addEventListener('scroll', () => {
         }
     });
 });
+
+/* ========================================
+   PREMIUM 3D CARD INTERACTION  (main portfolio only)
+
+   Drives every .tilt-card from the data-tilt / data-tilt-max /
+   data-tilt-axis / data-tilt-max-glare attributes that index.html already
+   declares. It only writes two things:
+     1. the card's own perspective/rotate/scale transform, and
+     2. the --mx / --my custom properties that position the surface
+        highlight (all the visuals live in style.css).
+   One rAF loop runs per card and only while that card is being animated.
+   Skipped entirely for prefers-reduced-motion and for touch-only pointers.
+   The cinematic intro is not touched by any of this.
+   ======================================== */
+(function initTiltCards() {
+  const cards = document.querySelectorAll('[data-tilt]');
+  if (!cards.length) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+  if (reduceMotion.matches || !finePointer.matches) return;
+
+  const EASE = 0.16;        // per-frame approach factor (smooth, no easing lib)
+  const REST_SCALE = 1.02;  // gentle hover lift
+
+  cards.forEach(function (card) {
+    const maxTilt = parseFloat(card.getAttribute('data-tilt-max')) || 7;
+    const axis = card.getAttribute('data-tilt-axis') || 'both';
+    const rotateXOnly = axis === 'x';  // data-tilt-axis="x"  -> rotateX only
+    const rotateYOnly = axis === 'y';  // data-tilt-axis="y"  -> rotateY only
+
+    let rect = null;
+    let raf = null;
+    let active = false;
+    let targetX = 0, targetY = 0;   // desired rotation
+    let currentX = 0, currentY = 0; // rendered rotation
+    let scale = 1, targetScale = 1;
+
+    function paint() {
+      currentX += (targetX - currentX) * EASE;
+      currentY += (targetY - currentY) * EASE;
+      scale += (targetScale - scale) * EASE;
+
+      const settledX = Math.abs(targetX - currentX) < 0.02;
+      const settledY = Math.abs(targetY - currentY) < 0.02;
+      const settledS = Math.abs(targetScale - scale) < 0.002;
+      if (settledX) currentX = targetX;
+      if (settledY) currentY = targetY;
+      if (settledS) scale = targetScale;
+
+      card.style.transform =
+        'perspective(1000px) rotateX(' + currentX.toFixed(3) + 'deg) rotateY(' +
+        currentY.toFixed(3) + 'deg) scale3d(' + scale.toFixed(4) + ',' + scale.toFixed(4) + ',1)';
+
+      if (settledX && settledY && settledS && !active) {
+        card.classList.remove('is-tilting');
+        card.style.transform = '';
+        raf = null;
+        return;
+      }
+      raf = requestAnimationFrame(paint);
+    }
+
+    function run() {
+      if (raf === null) raf = requestAnimationFrame(paint);
+    }
+
+    function onEnter(e) {
+      if (e.pointerType === 'touch') return;
+      rect = card.getBoundingClientRect();
+      active = true;
+      targetScale = REST_SCALE;
+      card.classList.add('is-tilting');
+      onMove(e);
+    }
+
+    function onMove(e) {
+      if (!active || !rect || !rect.width) return;
+
+      const px = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+      const py = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+
+      card.style.setProperty('--mx', (px * 100).toFixed(2) + '%');
+      card.style.setProperty('--my', (py * 100).toFixed(2) + '%');
+
+      const dx = (px - 0.5) * 2;  // -1 .. 1
+      const dy = (py - 0.5) * 2;
+
+      targetY = rotateXOnly ? 0 : dx * maxTilt;
+      targetX = rotateYOnly ? 0 : -dy * maxTilt;
+      run();
+    }
+
+    function onLeave() {
+      active = false;
+      targetX = 0;
+      targetY = 0;
+      targetScale = 1;
+      run();
+    }
+
+    card.addEventListener('pointerenter', onEnter, { passive: true });
+    card.addEventListener('pointermove', onMove, { passive: true });
+    card.addEventListener('pointerleave', onLeave, { passive: true });
+  });
+})();
