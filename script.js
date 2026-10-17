@@ -855,16 +855,15 @@ window.addEventListener('scroll', () => {
    Skipped entirely for prefers-reduced-motion and for touch-only pointers.
    The cinematic intro is not touched by any of this.
 
-   data-tilt-lift="<px>" is opt-in and currently only set on the
-   certification cards. It adds a real translateZ toward the viewer on
-   hover ("pick the certificate up and bring it closer"). The perspective
-   stays on the card itself: giving .cert-container a shared perspective
-   projects the existing translateZ layers of .cert-header / .cert-issuer /
-   .cert-desc even at rest, which measurably magnified and displaced the
-   card's own content before any hover happened.
+   The certification cards are excluded here: they own a different
+   interaction (initCertFly, below) because a hovered certificate flies
+   toward the centre of its grid instead of tilting in place.
    ======================================== */
 (function initTiltCards() {
-  const cards = document.querySelectorAll('[data-tilt]');
+  const cards = Array.prototype.filter.call(
+    document.querySelectorAll('[data-tilt]'),
+    function (card) { return !card.closest('.cert-container'); }
+  );
   if (!cards.length) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -880,43 +879,31 @@ window.addEventListener('scroll', () => {
     const rotateXOnly = axis === 'x';  // data-tilt-axis="x"  -> rotateX only
     const rotateYOnly = axis === 'y';  // data-tilt-axis="y"  -> rotateY only
 
-    // Opt-in travel toward the viewer. The perspective stays on the card
-    // itself so the resting layout is untouched; a shared parent perspective
-    // would project this card's translateZ layers even with no hover.
-    const lift = parseFloat(card.getAttribute('data-tilt-lift')) || 0;
-
     let rect = null;
     let raf = null;
     let active = false;
     let targetX = 0, targetY = 0;   // desired rotation
     let currentX = 0, currentY = 0; // rendered rotation
     let scale = 1, targetScale = 1;
-    let z = 0, targetZ = 0;         // rendered / desired depth
 
     function paint() {
       currentX += (targetX - currentX) * EASE;
       currentY += (targetY - currentY) * EASE;
       scale += (targetScale - scale) * EASE;
-      z += (targetZ - z) * EASE;
 
       const settledX = Math.abs(targetX - currentX) < 0.02;
       const settledY = Math.abs(targetY - currentY) < 0.02;
       const settledS = Math.abs(targetScale - scale) < 0.002;
-      const settledZ = Math.abs(targetZ - z) < 0.5;
       if (settledX) currentX = targetX;
       if (settledY) currentY = targetY;
       if (settledS) scale = targetScale;
-      if (settledZ) z = targetZ;
 
-      // Order matters: the lift runs first, along the view axis, so the card
-      // genuinely travels toward the viewer before it angles.
       card.style.transform =
         'perspective(1000px) ' +
-        (lift > 0 ? 'translateZ(' + z.toFixed(2) + 'px) ' : '') +
         'rotateX(' + currentX.toFixed(3) + 'deg) rotateY(' +
         currentY.toFixed(3) + 'deg) scale3d(' + scale.toFixed(4) + ',' + scale.toFixed(4) + ',1)';
 
-      if (settledX && settledY && settledS && settledZ && !active) {
+      if (settledX && settledY && settledS && !active) {
         card.classList.remove('is-tilting');
         card.style.transform = '';
         raf = null;
@@ -934,7 +921,6 @@ window.addEventListener('scroll', () => {
       rect = card.getBoundingClientRect();
       active = true;
       targetScale = REST_SCALE;
-      targetZ = lift;
       card.classList.add('is-tilting');
       onMove(e);
     }
@@ -961,7 +947,6 @@ window.addEventListener('scroll', () => {
       targetX = 0;
       targetY = 0;
       targetScale = 1;
-      targetZ = 0;
       run();
     }
 
@@ -969,4 +954,184 @@ window.addEventListener('scroll', () => {
     card.addEventListener('pointermove', onMove, { passive: true });
     card.addEventListener('pointerleave', onLeave, { passive: true });
   });
+})();
+
+/* ========================================
+   CERTIFICATION FOCUS FLY  (certifications only)
+
+   One interaction no other card in the site has. Hovering a certification
+   card brings it forward toward the viewer AND slides it toward the
+   horizontal centre of the grid, so a card on the left flies in from the
+   left, a card on the right flies in from the right and a card already on
+   the centre line simply comes straight forward — the certificate is
+   lifted off the grid and held up in front of you.
+
+   The travel is derived from the card's live position inside the grid at
+   the moment of hover, so nothing is hard-coded and the effect re-derives
+   itself when the grid reflows from three columns to two to one.
+
+   Hover is tracked on the container and hit-tested against the cards'
+   LAYOUT boxes (offsetLeft / offsetTop are immune to transforms). A card
+   that slides out from under the cursor would otherwise drop :hover the
+   instant it moved and flicker back and forth; testing the original
+   footprint keeps the card forward until the pointer genuinely leaves it.
+   Skipped for prefers-reduced-motion and for touch-only pointers.
+   ======================================== */
+(function initCertFly() {
+  const container = document.querySelector('.cert-container');
+  if (!container) return;
+
+  const cards = Array.prototype.slice.call(
+    container.querySelectorAll('[data-tilt]')
+  );
+  if (!cards.length) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+  if (reduceMotion.matches || !finePointer.matches) return;
+
+  const EASE = 0.16;    // per-frame approach factor (smooth settle, no easing lib)
+  const SCALE = 1.05;   // extra size on top of the perspective growth
+  const FACTOR = 0.42;  // how much of the run to the grid centre is travelled
+  const MAX_FLY = 150;  // px cap, so a very wide grid cannot throw a card away
+  const MAX_TILT = 6;   // gentle pointer tilt, subtle enough to keep text flat
+
+  // Signed horizontal distance from the card's centre to the grid's centre,
+  // in untransformed layout coordinates: positive => the card sits left of
+  // centre and therefore flies to the right.
+  function runToCentre(card) {
+    return container.clientWidth / 2 - (card.offsetLeft + card.offsetWidth / 2);
+  }
+
+  function makeEngine(card) {
+    const depth = parseFloat(card.getAttribute('data-tilt-lift')) || 90;
+    let raf = null;
+    let focused = false;
+    let rotX = 0, rotY = 0, targetRotX = 0, targetRotY = 0;
+    let scale = 1, targetScale = 1;
+    let z = 0, targetZ = 0;
+    let fly = 0, targetFly = 0;
+
+    function frame() {
+      rotX += (targetRotX - rotX) * EASE;
+      rotY += (targetRotY - rotY) * EASE;
+      scale += (targetScale - scale) * EASE;
+      z += (targetZ - z) * EASE;
+      fly += (targetFly - fly) * EASE;
+
+      const settledX = Math.abs(targetRotX - rotX) < 0.02;
+      const settledY = Math.abs(targetRotY - rotY) < 0.02;
+      const settledS = Math.abs(targetScale - scale) < 0.002;
+      const settledZ = Math.abs(targetZ - z) < 0.5;
+      const settledF = Math.abs(targetFly - fly) < 0.5;
+      if (settledX) rotX = targetRotX;
+      if (settledY) rotY = targetRotY;
+      if (settledS) scale = targetScale;
+      if (settledZ) z = targetZ;
+      if (settledF) fly = targetFly;
+
+      // Order matters: the slide toward the centre happens on the surface
+      // plane, then the card is pushed along the view axis so it genuinely
+      // travels toward the viewer, then it angles.
+      card.style.transform =
+        'perspective(1000px) ' +
+        'translate3d(' + fly.toFixed(2) + 'px, 0px, 0px) ' +
+        'translateZ(' + z.toFixed(2) + 'px) ' +
+        'rotateX(' + rotX.toFixed(3) + 'deg) rotateY(' + rotY.toFixed(3) + 'deg) ' +
+        'scale3d(' + scale.toFixed(4) + ',' + scale.toFixed(4) + ',1)';
+
+      if (settledX && settledY && settledS && settledZ && settledF && !focused) {
+        card.classList.remove('is-tilting');
+        card.style.transform = '';
+        raf = null;
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    function run() {
+      if (raf === null) raf = requestAnimationFrame(frame);
+    }
+
+    return {
+      focus: function (clientX, clientY) {
+        if (!focused) {
+          focused = true;
+          targetScale = SCALE;
+          targetZ = depth;
+          targetFly = Math.max(
+            -MAX_FLY,
+            Math.min(MAX_FLY, runToCentre(card) * FACTOR)
+          );
+          card.classList.add('is-tilting');
+        }
+        // The highlight / tilt follow the living card so they stay under the
+        // cursor while the card is travelling.
+        const rect = card.getBoundingClientRect();
+        if (rect.width && rect.height) {
+          const nx = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+          const ny = Math.min(1, Math.max(0, (clientY - rect.top) / rect.height));
+          card.style.setProperty('--mx', (nx * 100).toFixed(2) + '%');
+          card.style.setProperty('--my', (ny * 100).toFixed(2) + '%');
+          targetRotY = (nx - 0.5) * 2 * MAX_TILT;
+          targetRotX = -(ny - 0.5) * 2 * MAX_TILT;
+        }
+        run();
+      },
+      rest: function () {
+        focused = false;
+        targetRotX = 0;
+        targetRotY = 0;
+        targetScale = 1;
+        targetZ = 0;
+        targetFly = 0;
+        run();
+      }
+    };
+  }
+
+  const engines = new Map();
+  cards.forEach(function (card) {
+    engines.set(card, makeEngine(card));
+  });
+
+  let activeCard = null;
+
+  // Which card owns this pointer position — judged against the cards' layout
+  // boxes, never their transformed rendering.
+  function cardAt(x, y) {
+    for (let i = 0; i < cards.length; i++) {
+      const c = cards[i];
+      if (
+        x >= c.offsetLeft && x <= c.offsetLeft + c.offsetWidth &&
+        y >= c.offsetTop && y <= c.offsetTop + c.offsetHeight
+      ) {
+        return c;
+      }
+    }
+    return null;
+  }
+
+  container.addEventListener('pointermove', function (e) {
+    if (e.pointerType === 'touch') return;
+    const box = container.getBoundingClientRect();
+    const hit = cardAt(
+      e.clientX - box.left - container.clientLeft,
+      e.clientY - box.top - container.clientTop
+    );
+    if (hit !== activeCard) {
+      if (activeCard) engines.get(activeCard).rest();
+      activeCard = hit;
+    }
+    if (hit) engines.get(hit).focus(e.clientX, e.clientY);
+  }, { passive: true });
+
+  function release() {
+    if (activeCard) {
+      engines.get(activeCard).rest();
+      activeCard = null;
+    }
+  }
+  container.addEventListener('pointerleave', release, { passive: true });
+  container.addEventListener('pointercancel', release, { passive: true });
 })();

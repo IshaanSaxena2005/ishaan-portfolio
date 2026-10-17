@@ -1606,7 +1606,7 @@ html.intro-done .cinematic-intro {
   .skill-card:hover > .card-header {
     transform: translateZ(54px);
   }
-  .cert-card:hover > .cert-header {
+  .cert-card.is-tilting > .cert-header {
     transform: translateZ(50px);
   }
   .project-showcase-card:hover > .project-info {
@@ -1618,17 +1618,32 @@ html.intro-done .cinematic-intro {
 }
 
 /* ---------------------------------------------------------------------
-   4. CERTIFICATION CARDS — layered icon chip + soft inner light
-   Opted in via data-tilt-lift (see script.js): on hover the card travels
-   forward on its own perspective, so it grows AND pushes outward, which
-   reads as a physical object coming toward you rather than a flat card
-   being scaled up. Only the certification cards in the site do this, so
-   their interaction stays distinct from every other card.
+   4. CERTIFICATION CARDS — focus fly-forward + layered icon chip
+   The certifications grid gets an interaction no other card in the site
+   has (initCertFly in script.js): a hovered card travels forward toward
+   the viewer on its own perspective AND slides toward the horizontal
+   centre of the grid — a card on the left flies in from the left, a card
+   on the right flies in from the right, and a card on the centre line
+   comes straight forward. Direction and distance are derived from the
+   card's live position in the grid, so nothing is hard-coded per column
+   and the effect re-derives itself when the grid reflows from three
+   columns to two to one.
+
    The perspective deliberately lives on the card itself, NOT on
    .cert-container: a shared parent perspective would project the existing
    .cert-header / .cert-issuer / .cert-desc translateZ layers even at rest
    and visibly magnify the card content before any hover happened.
    --------------------------------------------------------------------- */
+.cert-container {
+  /* The cards' layout origin. initCertFly measures each card's distance
+     from the centre of the grid against this, never against a living
+     (already transformed) box. */
+  position: relative;
+}
+/* A card in flight now overlaps its neighbours, so it must sit above them. */
+.cert-card.is-tilting {
+  z-index: 6;
+}
 .cert-icon {
   background: linear-gradient(
     150deg,
@@ -1645,7 +1660,7 @@ html.intro-done .cinematic-intro {
   filter: drop-shadow(0 2px 6px rgba(168, 85, 247, 0.5));
 }
 @media (hover: hover) and (pointer: fine) {
-  .cert-card:hover .cert-icon {
+  .cert-card.is-tilting .cert-icon {
     transform: translateZ(34px) scale(1.06);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.2),
@@ -1653,20 +1668,26 @@ html.intro-done .cinematic-intro {
       0 12px 26px -8px rgba(168, 85, 247, 0.75);
   }
 
-  /* Hover lighting signature unique to certifications. The shared rule only
-     brightens the border and adds a purple glow; here the frame edge catches
-     more light, the cast shadow drops much further away (the card has left
-     the surface) and the cursor highlight is tighter and whiter, so the
-     lifted certificate reads as a solid lit object. */
-  .certifications .cert-card:hover {
-    border-color: rgba(192, 132, 252, 0.72);
+  /* Hover lighting signature unique to certifications. Everything here is
+     keyed to .is-tilting (written by initCertFly) rather than to :hover,
+     because the card deliberately slides out from under the cursor — a
+     :hover-keyed style would drop the moment the card moved away. The
+     frame edge catches more light, the cast shadow drops much further
+     away (the card has left the surface) and the cursor highlight is
+     tighter and whiter, so the lifted certificate reads as a solid lit
+     object held above the grid. */
+  .certifications .cert-card.is-tilting {
+    border-color: rgba(192, 132, 252, 0.78);
     box-shadow:
-      0 6px 12px rgba(0, 0, 0, 0.6),
-      0 30px 54px -14px rgba(0, 0, 0, 0.7),
-      0 82px 120px -42px rgba(0, 0, 0, 0.82),
-      0 40px 90px -30px rgba(168, 85, 247, 0.72),
-      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 8px 16px rgba(0, 0, 0, 0.6),
+      0 34px 60px -14px rgba(0, 0, 0, 0.72),
+      0 96px 150px -46px rgba(0, 0, 0, 0.85),
+      0 46px 100px -30px rgba(168, 85, 247, 0.75),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
       inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  }
+  .certifications .cert-card.is-tilting::after {
+    opacity: 1;
   }
   .certifications .cert-card::after {
     background: radial-gradient(
