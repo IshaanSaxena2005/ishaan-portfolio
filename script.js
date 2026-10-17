@@ -976,6 +976,11 @@ window.addEventListener('scroll', () => {
    instant it moved and flicker back and forth; testing the original
    footprint keeps the card forward until the pointer genuinely leaves it.
    Skipped for prefers-reduced-motion and for touch-only pointers.
+
+   The card does NOT rotate. The fly-forward toward the grid centre and the
+   viewer is the only transform this interaction ever writes — there is no
+   pointer-driven rotateX/rotateY and no second animation competing with the
+   movement.
    ======================================== */
 (function initCertFly() {
   const container = document.querySelector('.cert-container');
@@ -994,7 +999,6 @@ window.addEventListener('scroll', () => {
   const SCALE = 1.05;   // extra size on top of the perspective growth
   const FACTOR = 0.42;  // how much of the run to the grid centre is travelled
   const MAX_FLY = 150;  // px cap, so a very wide grid cannot throw a card away
-  const MAX_TILT = 6;   // gentle pointer tilt, subtle enough to keep text flat
 
   // Signed horizontal distance from the card's centre to the grid's centre,
   // in untransformed layout coordinates: positive => the card sits left of
@@ -1007,40 +1011,33 @@ window.addEventListener('scroll', () => {
     const depth = parseFloat(card.getAttribute('data-tilt-lift')) || 90;
     let raf = null;
     let focused = false;
-    let rotX = 0, rotY = 0, targetRotX = 0, targetRotY = 0;
     let scale = 1, targetScale = 1;
     let z = 0, targetZ = 0;
     let fly = 0, targetFly = 0;
 
     function frame() {
-      rotX += (targetRotX - rotX) * EASE;
-      rotY += (targetRotY - rotY) * EASE;
       scale += (targetScale - scale) * EASE;
       z += (targetZ - z) * EASE;
       fly += (targetFly - fly) * EASE;
 
-      const settledX = Math.abs(targetRotX - rotX) < 0.02;
-      const settledY = Math.abs(targetRotY - rotY) < 0.02;
       const settledS = Math.abs(targetScale - scale) < 0.002;
       const settledZ = Math.abs(targetZ - z) < 0.5;
       const settledF = Math.abs(targetFly - fly) < 0.5;
-      if (settledX) rotX = targetRotX;
-      if (settledY) rotY = targetRotY;
       if (settledS) scale = targetScale;
       if (settledZ) z = targetZ;
       if (settledF) fly = targetFly;
 
-      // Order matters: the slide toward the centre happens on the surface
-      // plane, then the card is pushed along the view axis so it genuinely
-      // travels toward the viewer, then it angles.
+      // One transform, one gesture. Order matters: the slide toward the grid
+      // centre happens on the surface plane, then the card is pushed along
+      // the view axis so it genuinely travels toward the viewer. No rotation
+      // term is written, so nothing here can change the card's angle.
       card.style.transform =
         'perspective(1000px) ' +
         'translate3d(' + fly.toFixed(2) + 'px, 0px, 0px) ' +
         'translateZ(' + z.toFixed(2) + 'px) ' +
-        'rotateX(' + rotX.toFixed(3) + 'deg) rotateY(' + rotY.toFixed(3) + 'deg) ' +
         'scale3d(' + scale.toFixed(4) + ',' + scale.toFixed(4) + ',1)';
 
-      if (settledX && settledY && settledS && settledZ && settledF && !focused) {
+      if (settledS && settledZ && settledF && !focused) {
         card.classList.remove('is-tilting');
         card.style.transform = '';
         raf = null;
@@ -1054,34 +1051,20 @@ window.addEventListener('scroll', () => {
     }
 
     return {
-      focus: function (clientX, clientY) {
-        if (!focused) {
-          focused = true;
-          targetScale = SCALE;
-          targetZ = depth;
-          targetFly = Math.max(
-            -MAX_FLY,
-            Math.min(MAX_FLY, runToCentre(card) * FACTOR)
-          );
-          card.classList.add('is-tilting');
-        }
-        // The highlight / tilt follow the living card so they stay under the
-        // cursor while the card is travelling.
-        const rect = card.getBoundingClientRect();
-        if (rect.width && rect.height) {
-          const nx = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-          const ny = Math.min(1, Math.max(0, (clientY - rect.top) / rect.height));
-          card.style.setProperty('--mx', (nx * 100).toFixed(2) + '%');
-          card.style.setProperty('--my', (ny * 100).toFixed(2) + '%');
-          targetRotY = (nx - 0.5) * 2 * MAX_TILT;
-          targetRotX = -(ny - 0.5) * 2 * MAX_TILT;
-        }
+      focus: function () {
+        if (focused) return;
+        focused = true;
+        targetScale = SCALE;
+        targetZ = depth;
+        targetFly = Math.max(
+          -MAX_FLY,
+          Math.min(MAX_FLY, runToCentre(card) * FACTOR)
+        );
+        card.classList.add('is-tilting');
         run();
       },
       rest: function () {
         focused = false;
-        targetRotX = 0;
-        targetRotY = 0;
         targetScale = 1;
         targetZ = 0;
         targetFly = 0;
@@ -1123,7 +1106,7 @@ window.addEventListener('scroll', () => {
       if (activeCard) engines.get(activeCard).rest();
       activeCard = hit;
     }
-    if (hit) engines.get(hit).focus(e.clientX, e.clientY);
+    if (hit) engines.get(hit).focus();
   }, { passive: true });
 
   function release() {

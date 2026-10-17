@@ -1536,10 +1536,13 @@ html.intro-done .cinematic-intro {
       rgba(168, 85, 247, 0) 68%
     );
   }
-  .tilt-card:not(.home-photo):hover::after {
+  /* Certification cards are deliberately excluded from the generic hover
+     treatment: they have exactly one hover rule set of their own (section
+     4), so nothing here can compete with the fly-forward movement. */
+  .tilt-card:not(.home-photo):not(.cert-card):hover::after {
     opacity: 1;
   }
-  .tilt-card:not(.home-photo):hover {
+  .tilt-card:not(.home-photo):not(.cert-card):hover {
     border-color: rgba(168, 85, 247, 0.55);
     box-shadow:
       0 4px 8px rgba(0, 0, 0, 0.55),
@@ -1690,8 +1693,11 @@ html.intro-done .cinematic-intro {
     opacity: 1;
   }
   .certifications .cert-card::after {
+    /* A fixed, centred sheen rather than a cursor-tracking one: the
+       certification hover never reads the pointer position, so the only
+       thing that moves when you hover is the card itself. */
     background: radial-gradient(
-      240px circle at var(--mx, 50%) var(--my, 50%),
+      240px circle at 50% 50%,
       rgba(255, 255, 255, 0.16) 0%,
       rgba(192, 132, 252, 0.18) 32%,
       rgba(168, 85, 247, 0) 70%
