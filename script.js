@@ -478,8 +478,8 @@
         // Just ensure it's rendered correctly
         renderWord(wordSequence[0], fontSize, trackingEm);
 
-        // Wait a moment before starting transformation
-        await wait(400);
+        // No hold here — the falling animation has already settled, so the
+        // morph starts immediately (the letters are at these exact positions).
 
         // Progressively transform through the sequence
         for (let i = 1; i < wordSequence.length; i++) {
@@ -771,8 +771,9 @@
     });
     lettersRoot.setAttribute('aria-label', FROM_WORD);
 
+    // waitForFall resolves on the last letter's letterFall animationend, i.e.
+    // exactly when it has landed and settled — so the morph begins immediately.
     await waitForFall(fromEls);
-    await wait(550); // brief hold on ISHAAN
 
     // STAGE 2 — progressive character transformation from ISHAAN to PORTFOLIO
     const plan = buildMorphPlan(fromSlots, toSlots);
