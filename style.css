@@ -313,8 +313,17 @@ html.intro-done .cinematic-intro {
   border: 0;
   border-radius: 0;
   background: transparent;
+  /* Layered, silhouette-following lights (all shadow the PNG's own alpha, so
+     the face stays untouched and no rectangular shape is introduced):
+       - soft contact shadow below for weight,
+       - faint purple ambient bloom,
+       - directional key light from the upper-left,
+       - restrained purple rim from the lower-right.
+     Together they read the flat cutout as a lit, rounded form. */
   filter: drop-shadow(0 26px 48px rgba(0, 0, 0, 0.62))
-    drop-shadow(0 0 34px rgba(168, 85, 247, 0.16));
+    drop-shadow(0 0 34px rgba(168, 85, 247, 0.16))
+    drop-shadow(-6px -6px 14px rgba(219, 196, 255, 0.18))
+    drop-shadow(7px 6px 18px rgba(168, 85, 247, 0.28));
   z-index: 1;
   /* SEAMLESS BLEND — vertical axis.
      The bottom 20% of the bitmap is a solid, full-width opaque block, so this
