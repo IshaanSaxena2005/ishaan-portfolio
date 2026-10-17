@@ -12,9 +12,7 @@
   const canvas = document.getElementById('intro-particles');
   const lettersRoot = document.getElementById('intro-letters');
   const portraitEl = document.getElementById('intro-portrait');
-  const portraitGlow = portraitEl
-    ? portraitEl.querySelector('.intro-portrait-glow')
-    : null;
+  const portraitImg = document.getElementById('intro-portrait-img');
 
   if (!intro || !lettersRoot) return;
 
@@ -358,18 +356,21 @@
   }
 
   /**
-   * STAGE 3 — the portrait materialises large and centred, just below the
-   * lifted PORTFOLIO title, with a cinematic 3D entrance, then holds.
+   * STAGE 3 — the portrait materialises LARGE and centred, just below the
+   * lifted PORTFOLIO title, with a cinematic 3D entrance, then holds so the
+   * viewer can clearly see it. Only the raw PNG silhouette is shown (no circle
+   * frame/ring) with a restrained depth shadow.
    */
   async function runPortraitReveal() {
     if (!portraitEl) return;
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    // Large but always inside the viewport on every screen size.
-    const size = Math.max(180, Math.min(vh * 0.46, vw * 0.82, 460));
+    // Substantially larger than before, but always inside the viewport.
+    const size = Math.max(240, Math.min(vh * 0.7, vw * 0.92, 740));
     const left = vw / 2 - size / 2;
-    const top = vh * 0.62 - size / 2;
+    // Sit in the lower-centre of the screen, clear of the lifted title.
+    const top = Math.max(vh * 0.3, Math.min(vh * 0.32, vh * 0.97 - size));
 
     portraitEl.style.width = size + 'px';
     portraitEl.style.height = size + 'px';
@@ -384,44 +385,31 @@
         {
           opacity: 0,
           transform:
-            'perspective(1200px) translateY(28px) scale(0.82) rotateX(14deg)',
-          filter: 'blur(14px)',
+            'perspective(1500px) translate3d(0, 46px, -80px) scale(0.9) rotateX(7deg)',
         },
         {
           opacity: 1,
           transform:
-            'perspective(1200px) translateY(-6px) scale(1.02) rotateX(-2deg)',
-          filter: 'blur(0px)',
-          offset: 0.68,
+            'perspective(1500px) translate3d(0, -8px, 0) scale(1.014) rotateX(-1.5deg)',
+          offset: 0.7,
         },
         {
           opacity: 1,
-          transform: 'perspective(1200px) translateY(0) scale(1) rotateX(0deg)',
-          filter: 'blur(0px)',
+          transform:
+            'perspective(1500px) translate3d(0, 0, 0) scale(1) rotateX(0deg)',
         },
       ],
-      { duration: 1000, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
+      { duration: 1050, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
     );
-
-    let glowAnim = null;
-    if (portraitGlow) {
-      glowAnim = portraitGlow.animate([{ opacity: 0 }, { opacity: 1 }], {
-        duration: 900,
-        easing: 'ease',
-        fill: 'forwards',
-      });
-    }
 
     await entrance.finished.catch(() => {});
     commitAnimation(entrance, portraitEl, {
       opacity: '1',
       transform: 'none',
-      filter: 'none',
     });
-    if (glowAnim) commitAnimation(glowAnim, portraitGlow, { opacity: '1' });
 
     // Hold the large portrait so the viewer can clearly see it.
-    await wait(900);
+    await wait(950);
   }
 
   /** Make sure the destination section sits at its final, un-transformed spot. */
@@ -437,8 +425,9 @@
   }
 
   /**
-   * STAGE 4 — the SAME portrait travels, scales and lands inside the existing
-   * circular profile image. The destination is measured at runtime, never hard-coded.
+   * STAGE 4 — the SAME portrait travels, scales down progressively and slowly,
+   * and lands exactly inside the existing circular profile image. The
+   * destination is measured at runtime (getBoundingClientRect), never hard-coded.
    */
   async function runPortraitTravel() {
     const target = document.querySelector('.home .profile-pic');
@@ -461,26 +450,45 @@
     const scale = dest.width / start.width;
     const dx = dest.left + dest.width / 2 - (start.left + start.width / 2);
     const dy = dest.top + dest.height / 2 - (start.top + start.height / 2);
+    const duration = 1700;
+    const easing = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
-    const travel = portraitEl.animate(
-      [
-        {
-          transform: 'perspective(1200px) translate3d(0,0,0) scale(1) rotateY(0deg)',
-          offset: 0,
-        },
-        {
-          transform: `perspective(1200px) translate3d(${dx * 0.5}px, ${
-            dy * 0.5 - 26
-          }px, 0) scale(${1 + (scale - 1) * 0.45}) rotateY(-14deg)`,
-          offset: 0.55,
-        },
-        {
-          transform: `perspective(1200px) translate3d(${dx}px, ${dy}px, 0) scale(${scale}) rotateY(0deg)`,
-          offset: 1,
-        },
-      ],
-      { duration: 1200, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' }
-    );
+    // Scale shrinks in even steps across the whole flight (never a sudden
+    // drop at the end), with a gentle arc and a subtle 3D lean for depth.
+    const arc = Math.min(64, Math.abs(dy) * 0.12 + 26);
+    const stops = [0, 0.32, 0.66, 1];
+    const frames = stops.map((p) => {
+      const s = 1 + (scale - 1) * p;
+      const x = dx * p;
+      const y = dy * p - Math.sin(Math.PI * p) * arc;
+      const lean = -7 * Math.sin(Math.PI * p);
+      const depth = 70 * Math.sin(Math.PI * p);
+      return {
+        offset: p,
+        transform: `perspective(1500px) translate3d(${x}px, ${y}px, ${depth}px) rotateY(${lean}deg) scale(${s})`,
+      };
+    });
+
+    const travel = portraitEl.animate(frames, {
+      duration,
+      easing,
+      fill: 'forwards',
+    });
+
+    // The image itself rounds into the circle only as it arrives, matching the
+    // existing .profile-pic exactly. It stays a full, uncropped photo while large.
+    let shapeAnim = null;
+    if (portraitImg) {
+      portraitImg.style.borderRadius = '0%';
+      shapeAnim = portraitImg.animate(
+        [
+          { borderRadius: '0%', offset: 0 },
+          { borderRadius: '0%', offset: 0.55 },
+          { borderRadius: '50%', offset: 1 },
+        ],
+        { duration, easing, fill: 'forwards' }
+      );
+    }
 
     await travel.finished.catch(() => {});
 
@@ -492,6 +500,18 @@
       top: dest.top + 'px',
       transform: 'none',
     });
+    if (portraitImg) portraitImg.style.borderRadius = '50%';
+    if (shapeAnim) shapeAnim.cancel();
+
+    // Hand-off: cross-fade the travelling portrait onto the real circle sitting
+    // beneath it (same image, same spot) so there is no flicker or duplicate.
+    const fade = portraitEl.animate([{ opacity: '1' }, { opacity: '0' }], {
+      duration: 320,
+      easing: 'ease-out',
+      fill: 'forwards',
+    });
+    await fade.finished.catch(() => {});
+    portraitEl.style.opacity = '0';
   }
 
   /**
