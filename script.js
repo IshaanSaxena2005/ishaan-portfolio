@@ -855,14 +855,18 @@ window.addEventListener('scroll', () => {
    Skipped entirely for prefers-reduced-motion and for touch-only pointers.
    The cinematic intro is not touched by any of this.
 
-   The certification cards are excluded here: they own a different
-   interaction (initCertFly, below) because a hovered certificate flies
-   toward the centre of its grid instead of tilting in place.
+   Certification cards and project cards are excluded here. A certificate
+   flies toward the centre of its grid (initCertFly, below) and a project
+   showcase pushes its image plane forward (style.css section 5); neither
+   of them tilts, so neither is driven from this engine.
    ======================================== */
 (function initTiltCards() {
   const cards = Array.prototype.filter.call(
     document.querySelectorAll('[data-tilt]'),
-    function (card) { return !card.closest('.cert-container'); }
+    function (card) {
+      return !card.closest('.cert-container') &&
+             !card.closest('.projects-container');
+    }
   );
   if (!cards.length) return;
 

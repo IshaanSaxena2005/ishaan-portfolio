@@ -1536,13 +1536,14 @@ html.intro-done .cinematic-intro {
       rgba(168, 85, 247, 0) 68%
     );
   }
-  /* Certification cards are deliberately excluded from the generic hover
-     treatment: they have exactly one hover rule set of their own (section
-     4), so nothing here can compete with the fly-forward movement. */
-  .tilt-card:not(.home-photo):not(.cert-card):hover::after {
+  /* Certification and project cards are deliberately excluded from the
+     generic hover treatment: each owns exactly one hover rule set of its
+     own (sections 4 and 5), so nothing here can compete with the way they
+     move. */
+  .tilt-card:not(.home-photo):not(.cert-card):not(.project-showcase-card):hover::after {
     opacity: 1;
   }
-  .tilt-card:not(.home-photo):not(.cert-card):hover {
+  .tilt-card:not(.home-photo):not(.cert-card):not(.project-showcase-card):hover {
     border-color: rgba(168, 85, 247, 0.55);
     box-shadow:
       0 4px 8px rgba(0, 0, 0, 0.55),
@@ -1596,10 +1597,11 @@ html.intro-done .cinematic-intro {
   transform: translateZ(24px);
 }
 
-/* Smooth, consistent response for every raised layer. */
+/* Smooth, consistent response for every raised layer. Project cards are
+   absent here: their layers are timed with the rest of their own gesture in
+   section 5, in one place. */
 .skill-card > .card-header,
 .cert-card > .cert-header,
-.project-showcase-card > .project-info,
 .timeline-item > .timeline-content,
 .edu-item > .edu-card {
   transition: transform 0.5s var(--surface-ease);
@@ -1612,9 +1614,8 @@ html.intro-done .cinematic-intro {
   .cert-card.is-tilting > .cert-header {
     transform: translateZ(50px);
   }
-  .project-showcase-card:hover > .project-info {
-    transform: translateZ(48px);
-  }
+  /* Project cards get no depth rule here: their whole hover is defined in
+     one place (section 5) so there is no second source of movement. */
   .about-img:hover > .About-photo {
     transform: translateZ(38px);
   }
@@ -1706,12 +1707,44 @@ html.intro-done .cinematic-intro {
 }
 
 /* ---------------------------------------------------------------------
-   5. PROJECT CARDS — thumbnail set into the surface
+   5. PROJECT CARDS — cinematic push-in (lens)
+   Projects carry the heaviest treatment on the page, and it is deliberately
+   nothing like a tilt. The card does not rotate and does not travel
+   sideways: the frame advances a little, the thumbnail plane drives far
+   further forward — out of the card's padding and toward the viewer,
+   casting its own shadow back onto the card — and the text plane holds its
+   distance on purpose. Image and copy therefore separate into two depth
+   planes you can look *between*: a lens push-in rather than a card turning
+   over.
+
+   The camera lives on the card itself (perspective() inside the card's own
+   transform) and only exists while the card is hovered. At rest the card
+   has no transform at all, so the translateZ layers in section 3 stay
+   perfectly flat and the resting layout is unchanged.
+
+   Because the frame only grows ~1% the pointer never leaves the card, so a
+   plain :hover is stable and this interaction needs no scripting at all.
+   The generic tilt engine skips project cards (script.js), so nothing else
+   writes a transform on them.
    --------------------------------------------------------------------- */
 .project-img-wrapper {
   box-shadow:
     0 14px 34px -16px rgba(0, 0, 0, 0.85),
     inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  transition:
+    transform 0.75s var(--surface-ease),
+    box-shadow 0.75s var(--surface-ease);
+}
+.project-showcase-card {
+  transition:
+    transform 0.75s var(--surface-ease),
+    border-color 0.55s ease,
+    box-shadow 0.75s var(--surface-ease);
+}
+/* Matched timing so the frame, the thumbnail and the copy move as one
+   gesture instead of three separate ones. */
+.project-showcase-card .project-info {
+  transition: transform 0.75s var(--surface-ease);
 }
 .project-img-wrapper::after {
   content: '';
@@ -1728,6 +1761,45 @@ html.intro-done .cinematic-intro {
 }
 .project-overlay {
   z-index: 2;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .project-showcase-card:hover {
+    /* The camera. The ~1% growth of the frame is what keeps the pointer
+       inside the card for the whole gesture. */
+    transform: perspective(1200px) translateZ(12px);
+    z-index: 3;
+    /* Lighting unique to the project showcase: a cool steel rim instead of
+       the site-wide purple glow, and a cast shadow thrown far down-right,
+       as if the card had been lifted toward a light sitting up and to the
+       left. */
+    border-color: rgba(226, 232, 240, 0.34);
+    box-shadow:
+      0 6px 12px rgba(0, 0, 0, 0.6),
+      38px 48px 96px -46px rgba(0, 0, 0, 0.9),
+      -24px -22px 64px -38px rgba(168, 85, 247, 0.28),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.55);
+  }
+  .project-showcase-card:hover .project-img-wrapper {
+    /* The plane the whole interaction is about: it advances out of the
+       card's padding toward the viewer and projects its own shadow back
+       onto the card it came from. The travel stops short of the card's
+       border (the off-centre plane drifts outward as it comes forward), so
+       the frame itself is never broken. */
+    transform: translateZ(50px);
+    box-shadow:
+      0 30px 48px -22px rgba(0, 0, 0, 0.9),
+      30px 36px 76px -34px rgba(0, 0, 0, 0.85),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  }
+  .project-showcase-card:hover .project-info {
+    /* Held back deliberately: the copy stays on the card's own plane, so
+       the paragraph does not magnify while the image advances past it.
+       That difference is the parallax. */
+    transform: translateZ(0px);
+  }
 }
 
 /* ---------------------------------------------------------------------
@@ -2033,7 +2105,9 @@ html.intro-done .cinematic-intro {
     display: none;
   }
   .tilt-card > *,
-  .cert-icon {
+  .cert-icon,
+  .project-showcase-card,
+  .project-showcase-card .project-img {
     transform: none !important;
   }
   /* Pre-existing scroll-reveal / progress animations: snap straight to the
