@@ -1,15 +1,20 @@
 /* ========================================
    CINEMATIC INTRO
-   ISHAAN → PORTFOLIO → curtain reveal
+   ISHAAN → PORTFOLIO → portrait reveal → portrait travels into the home circle
    Plays on every full page reload; respects prefers-reduced-motion
    ======================================== */
 (function initCinematicIntro() {
   const FROM_WORD = 'ISHAAN';
   const TO_WORD = 'PORTFOLIO';
+  const PORTRAIT_SRC = 'Linkedin profile.png';
 
   const intro = document.getElementById('cinematic-intro');
   const canvas = document.getElementById('intro-particles');
   const lettersRoot = document.getElementById('intro-letters');
+  const portraitEl = document.getElementById('intro-portrait');
+  const portraitGlow = portraitEl
+    ? portraitEl.querySelector('.intro-portrait-glow')
+    : null;
 
   if (!intro || !lettersRoot) return;
 
@@ -337,20 +342,155 @@
     });
   }
 
-  function waitForCurtain() {
+  function preloadImage(src) {
     return new Promise((resolve) => {
-      let settled = false;
-      const done = () => {
-        if (settled) return;
-        settled = true;
-        intro.removeEventListener('animationend', onEnd);
-        resolve();
-      };
-      const onEnd = (e) => {
-        if (e.target === intro && e.animationName === 'curtainReveal') done();
-      };
-      intro.addEventListener('animationend', onEnd);
-      trackTimeout(done, 1400);
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = src;
+    });
+  }
+
+  /** Bake an animation's final state into inline styles, then drop the animation. */
+  function commitAnimation(anim, el, styles) {
+    Object.assign(el.style, styles);
+    if (anim) anim.cancel();
+  }
+
+  /**
+   * STAGE 3 — the portrait materialises large and centred, just below the
+   * lifted PORTFOLIO title, with a cinematic 3D entrance, then holds.
+   */
+  async function runPortraitReveal() {
+    if (!portraitEl) return;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    // Large but always inside the viewport on every screen size.
+    const size = Math.max(180, Math.min(vh * 0.46, vw * 0.82, 460));
+    const left = vw / 2 - size / 2;
+    const top = vh * 0.62 - size / 2;
+
+    portraitEl.style.width = size + 'px';
+    portraitEl.style.height = size + 'px';
+    portraitEl.style.left = left + 'px';
+    portraitEl.style.top = top + 'px';
+
+    // Lift the settled title so it never overlaps the portrait.
+    intro.classList.add('stage-portrait');
+
+    const entrance = portraitEl.animate(
+      [
+        {
+          opacity: 0,
+          transform:
+            'perspective(1200px) translateY(28px) scale(0.82) rotateX(14deg)',
+          filter: 'blur(14px)',
+        },
+        {
+          opacity: 1,
+          transform:
+            'perspective(1200px) translateY(-6px) scale(1.02) rotateX(-2deg)',
+          filter: 'blur(0px)',
+          offset: 0.68,
+        },
+        {
+          opacity: 1,
+          transform: 'perspective(1200px) translateY(0) scale(1) rotateX(0deg)',
+          filter: 'blur(0px)',
+        },
+      ],
+      { duration: 1000, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
+    );
+
+    let glowAnim = null;
+    if (portraitGlow) {
+      glowAnim = portraitGlow.animate([{ opacity: 0 }, { opacity: 1 }], {
+        duration: 900,
+        easing: 'ease',
+        fill: 'forwards',
+      });
+    }
+
+    await entrance.finished.catch(() => {});
+    commitAnimation(entrance, portraitEl, {
+      opacity: '1',
+      transform: 'none',
+      filter: 'none',
+    });
+    if (glowAnim) commitAnimation(glowAnim, portraitGlow, { opacity: '1' });
+
+    // Hold the large portrait so the viewer can clearly see it.
+    await wait(900);
+  }
+
+  /** Make sure the destination section sits at its final, un-transformed spot. */
+  function settleDestination() {
+    const home = document.querySelector('.home.reveal');
+    if (home && !home.classList.contains('active')) {
+      const prev = home.style.transition;
+      home.style.transition = 'none';
+      home.classList.add('active');
+      void home.offsetWidth; // flush layout at the final position
+      home.style.transition = prev;
+    }
+  }
+
+  /**
+   * STAGE 4 — the SAME portrait travels, scales and lands inside the existing
+   * circular profile image. The destination is measured at runtime, never hard-coded.
+   */
+  async function runPortraitTravel() {
+    const target = document.querySelector('.home .profile-pic');
+    if (!portraitEl || !target) return;
+
+    settleDestination();
+
+    // Freeze the portrait's current on-screen box as the animation origin.
+    const start = portraitEl.getBoundingClientRect();
+    portraitEl.style.transform = 'none';
+    portraitEl.style.width = start.width + 'px';
+    portraitEl.style.height = start.height + 'px';
+    portraitEl.style.left = start.left + 'px';
+    portraitEl.style.top = start.top + 'px';
+
+    // Reveal the portfolio beneath the overlay as the portrait flies in.
+    intro.classList.add('stage-travel');
+
+    const dest = target.getBoundingClientRect();
+    const scale = dest.width / start.width;
+    const dx = dest.left + dest.width / 2 - (start.left + start.width / 2);
+    const dy = dest.top + dest.height / 2 - (start.top + start.height / 2);
+
+    const travel = portraitEl.animate(
+      [
+        {
+          transform: 'perspective(1200px) translate3d(0,0,0) scale(1) rotateY(0deg)',
+          offset: 0,
+        },
+        {
+          transform: `perspective(1200px) translate3d(${dx * 0.5}px, ${
+            dy * 0.5 - 26
+          }px, 0) scale(${1 + (scale - 1) * 0.45}) rotateY(-14deg)`,
+          offset: 0.55,
+        },
+        {
+          transform: `perspective(1200px) translate3d(${dx}px, ${dy}px, 0) scale(${scale}) rotateY(0deg)`,
+          offset: 1,
+        },
+      ],
+      { duration: 1200, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' }
+    );
+
+    await travel.finished.catch(() => {});
+
+    // Snap exactly onto the real circle so the hand-off has zero jump.
+    commitAnimation(travel, portraitEl, {
+      width: dest.width + 'px',
+      height: dest.height + 'px',
+      left: dest.left + 'px',
+      top: dest.top + 'px',
+      transform: 'none',
     });
   }
 
@@ -491,6 +631,9 @@
   }
 
   async function runSequence() {
+    // Start loading the portrait immediately so STAGE 3 never shows a blank image.
+    const portraitReady = preloadImage(PORTRAIT_SRC);
+
     setupParticles();
 
     // Wait a frame for Cinzel to be available for measurement
@@ -521,9 +664,13 @@
     const plan = buildMorphPlan(fromSlots, toSlots);
     await runMorph(fromEls, fromSlots, toSlots, plan);
 
-    // STAGE 3 — curtain reveal into existing portfolio
-    intro.classList.add('stage-reveal');
-    await waitForCurtain();
+    // STAGE 3 — large cinematic portrait reveal below the title
+    await portraitReady;
+    await runPortraitReveal();
+
+    // STAGE 4 — the same portrait travels into the existing circular image
+    await runPortraitTravel();
+
     finishIntro();
   }
 
