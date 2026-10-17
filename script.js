@@ -493,29 +493,17 @@
       );
     }
 
-    await travel.finished.catch(() => {});
-
-    // Snap exactly onto the real circle so the hand-off has zero jump.
-    commitAnimation(travel, portraitEl, {
-      width: dest.width + 'px',
-      height: dest.height + 'px',
-      left: dest.left + 'px',
-      top: dest.top + 'px',
-      transform: 'none',
-    });
-    if (portraitImg) portraitImg.style.borderRadius = '50%';
-    if (shapeAnim) shapeAnim.cancel();
-
-    // Settle the portrait's edge-blend masks while the circle is still EMPTY.
-    // Now that the border-radius clips every straight bitmap edge, the masks only
-    // dim the circle's lower and side crescents; leaving them in place would make
-    // those crescents jump in brightness at the instant the real photo appeared
-    // underneath (measured: ~86 luminance in a single frame). mask-image gradients
-    // cannot be interpolated, so the fades are retracted by stretching mask-size,
-    // which brings every masked pixel to full opacity — the reveal then changes
-    // nothing on screen because the two layers already carry the same pixels.
-    portraitEl.classList.add('landed');
-    await new Promise((resolve) => {
+    // Retract the portrait's edge-blend masks DURING the final approach, timed so
+    // they are fully retracted the instant the portrait lands. Now that the
+    // border-radius clips every straight bitmap edge, the masks only dim the
+    // circle's lower and side crescents; leaving them in place would make those
+    // crescents jump in brightness when the real photo appeared underneath
+    // (measured: ~86 luminance in a single frame). mask-image gradients cannot be
+    // interpolated, so the fades are retracted by stretching mask-size, which
+    // brings every masked pixel to full opacity. Starting it 380ms before the
+    // landing keeps that change riding the motion, instead of parking the
+    // portrait in place while it settles.
+    const retracted = new Promise((resolve) => {
       let settled = false;
       const done = () => {
         if (settled) return;
@@ -529,8 +517,27 @@
         }
       };
       portraitEl.addEventListener('transitionend', onEnd);
-      trackTimeout(done, 400); // fallback if the transition never reports back
+      trackTimeout(() => portraitEl.classList.add('landed'), Math.max(0, duration - 380));
+      trackTimeout(done, duration); // fallback if the transition never reports back
     });
+
+    await travel.finished.catch(() => {});
+
+    // Snap exactly onto the real circle so the hand-off has zero jump.
+    commitAnimation(travel, portraitEl, {
+      width: dest.width + 'px',
+      height: dest.height + 'px',
+      left: dest.left + 'px',
+      top: dest.top + 'px',
+      transform: 'none',
+    });
+    if (portraitImg) portraitImg.style.borderRadius = '50%';
+    if (shapeAnim) shapeAnim.cancel();
+
+    // The retraction began ~380ms before the landing, so it is already complete
+    // (or a frame away) here — the hand-off follows immediately, with no parked
+    // frame in between.
+    await retracted;
 
     // HAND-OFF — the animated portrait has reached the frame's exact box, its
     // blend masks are fully retracted and its bitmap is rounded into the same

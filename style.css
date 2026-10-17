@@ -386,15 +386,24 @@ html.intro-done .cinematic-intro {
   transform: translateY(-32vh);
 }
 
+/* The PORTFOLIO title clears first, and only then does the backdrop hand the
+   screen over to the portfolio — so the title never lingers over the site as
+   it appears. The title's styling and the ISHAAN → PORTFOLIO morph are
+   untouched; only this exit timing changes. */
+.cinematic-intro.stage-travel .intro-stage {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
 /* Fade the intro backdrop away as the portrait travels into the portfolio,
-   so the real circle is visible at the destination. */
+   so the real circle is visible at the destination. The 0.4s hold lines the
+   portfolio's appearance up with the end of the title's exit. */
 .cinematic-intro.stage-travel {
   background-color: transparent;
-  transition: background-color 0.9s ease;
+  transition: background-color 0.9s ease 0.4s;
 }
 .cinematic-intro.stage-travel .intro-particles,
-.cinematic-intro.stage-travel .intro-lighting,
-.cinematic-intro.stage-travel .intro-stage {
+.cinematic-intro.stage-travel .intro-lighting {
   opacity: 0;
   transition: opacity 0.6s ease;
 }
