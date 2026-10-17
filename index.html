@@ -13,6 +13,44 @@
     <script>
       // Cover page immediately so the portfolio never flashes before the intro
       document.documentElement.classList.add('intro-pending');
+
+      // Always open a full reload at the very top so the cinematic intro is
+      // viewed from the beginning. Without this the browser restores the old
+      // scroll position and the intro plays off-screen.
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+
+      // A global `scroll-behavior: smooth` would turn this reset into a visible
+      // animated scroll, so it is forced to `auto` for the duration of the jump.
+      window.__forceScrollTop = function () {
+        var root = document.documentElement;
+        var prevRoot = root.style.scrollBehavior;
+        var body = document.body;
+        var prevBody = body ? body.style.scrollBehavior : '';
+        root.style.scrollBehavior = 'auto';
+        if (body) body.style.scrollBehavior = 'auto';
+        window.scrollTo(0, 0);
+        root.scrollTop = 0;
+        if (body) body.scrollTop = 0;
+        root.style.scrollBehavior = prevRoot;
+        if (body) body.style.scrollBehavior = prevBody;
+      };
+
+      // Drop any #fragment so the browser cannot jump mid-page before the
+      // intro has played. Guarded for file:// where replaceState may throw.
+      if (location.hash) {
+        try {
+          history.replaceState(null, '', location.pathname + location.search);
+        } catch (err) {
+          /* ignore */
+        }
+      }
+
+      window.__forceScrollTop();
+      window.addEventListener('DOMContentLoaded', window.__forceScrollTop);
+      window.addEventListener('load', window.__forceScrollTop);
+      window.addEventListener('pageshow', window.__forceScrollTop);
     </script>
   </head>
   <body>

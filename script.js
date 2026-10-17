@@ -214,6 +214,13 @@
     document.documentElement.classList.remove('intro-pending');
     document.documentElement.classList.add('intro-done');
     document.body.classList.remove('intro-active');
+
+    // Last line of defence: browsers can restore the previous scroll position
+    // asynchronously — after the load event and while the intro is still on
+    // screen. Snap back to the very top once the overlay is gone so the main
+    // portfolio always opens at the beginning.
+    if (typeof window.__forceScrollTop === 'function') window.__forceScrollTop();
+
     intro.className = 'cinematic-intro';
     intro.setAttribute('hidden', '');
     intro.setAttribute('aria-hidden', 'true');
