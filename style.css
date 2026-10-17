@@ -294,25 +294,10 @@ html.intro-done .cinematic-intro {
   );
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
-}
-
-/* Ambient light pool sitting BEHIND the portrait so the subject separates from
-   the backdrop instead of being pasted onto it. A soft radial — no edge, no
-   ring — and it has faded to nothing well before the lower body, so it can
-   never read as a shape of its own. It inherits the container's horizontal mask. */
-.intro-portrait::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse 64% 52% at 50% 43%,
-    rgba(168, 85, 247, 0.17) 0%,
-    rgba(139, 92, 246, 0.1) 36%,
-    rgba(124, 58, 237, 0.04) 60%,
-    rgba(124, 58, 237, 0) 78%
-  );
+  /* Explicit (rather than the auto default) so the hand-off settle can
+     interpolate mask-size from exactly the element's own box outward. */
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
 
 /* The intro portrait shows ONLY the original PNG — no circle frame, border,
@@ -328,17 +313,8 @@ html.intro-done .cinematic-intro {
   border: 0;
   border-radius: 0;
   background: transparent;
-  /* Layered, directional lighting. Every drop-shadow traces the PNG's own
-     silhouette, so the light hugs the hair, glasses, shoulders and suit while
-     the interior pixels (the face) are never touched:
-       1. cool purple key rim from the upper-left  — the key light
-       2. violet rim from behind/right             — the rim light
-       3. violet bounce from the lower-right        — the fill light
-       4. deep contact shadow to the lower-right    — grounds the subject in space */
-  filter: drop-shadow(-7px -10px 16px rgba(198, 155, 255, 0.42))
-    drop-shadow(8px -5px 18px rgba(168, 85, 247, 0.26))
-    drop-shadow(10px 8px 26px rgba(139, 92, 246, 0.22))
-    drop-shadow(12px 30px 46px rgba(0, 0, 0, 0.66));
+  filter: drop-shadow(0 26px 48px rgba(0, 0, 0, 0.62))
+    drop-shadow(0 0 34px rgba(168, 85, 247, 0.16));
   z-index: 1;
   /* SEAMLESS BLEND — vertical axis.
      The bottom 20% of the bitmap is a solid, full-width opaque block, so this
@@ -366,50 +342,41 @@ html.intro-done .cinematic-intro {
   );
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
+  /* Explicit (rather than the auto default) so the hand-off settle can
+     interpolate mask-size from exactly the element's own box outward. */
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
 
-/* Directional key light on the subject. A soft wash falls from the upper-left
-   across the brow, cheekbone, glasses and the lit shoulder, giving the face and
-   suit volumetric depth instead of a flat print.
-   The wash is confined to the subject's own volume by a soft elliptical mask
-   that reaches zero well before the box edges, so it can never reach the
-   backdrop or create a rectangular boundary. A gradient mask is used instead
-   of a raster one on purpose: Chrome fetches CSS raster masks in CORS mode,
-   which is blocked for a file:// page, so a url() mask would silently drop out
-   locally (and error in the console) while working over http://. The gradient
-   behaves identically in both. Blended with soft-light so it modulates the
-   photo's own luminance — strengthening the lit side without washing it out or
-   flattening the shadows. */
-.intro-portrait-light {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(
-    126deg,
-    rgba(255, 255, 255, 0.34) 0%,
-    rgba(255, 255, 255, 0.16) 24%,
-    rgba(255, 255, 255, 0.06) 41%,
-    rgba(255, 255, 255, 0) 58%
-  );
-  -webkit-mask-image: radial-gradient(
-    ellipse 48% 42% at 47% 36%,
-    rgba(0, 0, 0, 1) 0%,
-    rgba(0, 0, 0, 0.86) 40%,
-    rgba(0, 0, 0, 0.4) 68%,
-    rgba(0, 0, 0, 0) 88%
-  );
-  mask-image: radial-gradient(
-    ellipse 48% 42% at 47% 36%,
-    rgba(0, 0, 0, 1) 0%,
-    rgba(0, 0, 0, 0.86) 40%,
-    rgba(0, 0, 0, 0.4) 68%,
-    rgba(0, 0, 0, 0) 88%
-  );
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  mix-blend-mode: soft-light;
-  opacity: 0.85;
+/* HAND-OFF SETTLE — the portrait has landed exactly on the circle, so both
+   blend masks have done their job: the border-radius now clips every straight
+   bitmap edge. What is left of them is only a dimming of the circle's lower
+   and side crescents, which would make the frame's interior jump in brightness
+   the moment the real photo is revealed underneath. Stretching the masks past
+   their own box (mask-size IS interpolable — unlike mask-image gradients)
+   carries every masked pixel to full opacity, and it is done while the circle
+   is still empty, so the reveal itself changes nothing on screen.
+   The end values are the smallest ones that clear each gradient's opaque
+   plateau, which is what keeps the change spread across the whole transition:
+   the vertical fade ends at 80% of the mask box, so 100% -> 125% already makes
+   the image fully opaque (with margin: 130%); the horizontal one is only
+   opaque between 20% and 80% of its width, so it needs 1/0.6 ≈ 167% (with
+   margin: 170%). Overshooting would saturate within the first frames and
+   reintroduce the very jump this is removing. mask-position only matters once
+   the mask is larger than the box. */
+.intro-portrait.landed {
+  -webkit-mask-size: 170% 100%;
+  mask-size: 170% 100%;
+  -webkit-mask-position: 50% 0;
+  mask-position: 50% 0;
+  transition: -webkit-mask-size 0.3s linear, mask-size 0.3s linear;
+}
+.intro-portrait.landed .intro-portrait-img {
+  -webkit-mask-size: 100% 130%;
+  mask-size: 100% 130%;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+  transition: -webkit-mask-size 0.3s linear, mask-size 0.3s linear;
 }
 
 /* Lift the settled PORTFOLIO title while the portrait appears below it.
@@ -419,21 +386,17 @@ html.intro-done .cinematic-intro {
   transform: translateY(-32vh);
 }
 
-/* Reveal the portfolio only at the hand-off — i.e. once the travelling
-   portrait has landed exactly on the real circle (see runPortraitTravel).
-   Revealing earlier exposed the real .profile-pic while the portrait was
-   still in flight, showing two portraits at once. The timing here is the
-   same 500ms as the travelling portrait's dissolve, so the real circle
-   emerges precisely underneath it: no flicker, no jump. */
+/* Fade the intro backdrop away as the portrait travels into the portfolio,
+   so the real circle is visible at the destination. */
 .cinematic-intro.stage-travel {
   background-color: transparent;
-  transition: background-color 0.5s ease;
+  transition: background-color 0.9s ease;
 }
 .cinematic-intro.stage-travel .intro-particles,
 .cinematic-intro.stage-travel .intro-lighting,
 .cinematic-intro.stage-travel .intro-stage {
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.6s ease;
 }
 
 @media (max-width: 768px) {
@@ -690,6 +653,14 @@ html.intro-done .cinematic-intro {
   object-fit: cover;
   border: 3px solid rgba(168, 85, 247, 0.6);
   box-shadow: 0 0 30px rgba(168, 85, 247, 0.4), 0 0 60px rgba(236, 72, 153, 0.15);
+}
+/* While the cinematic intro portrait is still flying toward the circle, only the
+   photo inside is blanked (the bitmap is parked outside its own box). The ring
+   and its glow live on this same element, so the frame stays fully visible and
+   the frame reads as empty until the animated portrait lands on it. */
+.home-photo.is-awaiting .profile-pic {
+  object-fit: none;
+  object-position: -10000px -10000px;
 }
 
 /* About Section */
