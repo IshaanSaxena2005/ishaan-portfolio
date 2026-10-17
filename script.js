@@ -1,6 +1,6 @@
 /* ========================================
    CINEMATIC INTRO
-   ISHAAN → PORTFOLIO → galaxy + photo → curtain reveal
+   ISHAAN → PORTFOLIO → curtain reveal
    Plays on every full page reload; respects prefers-reduced-motion
    ======================================== */
 (function initCinematicIntro() {
@@ -10,9 +10,6 @@
   const intro = document.getElementById('cinematic-intro');
   const canvas = document.getElementById('intro-particles');
   const lettersRoot = document.getElementById('intro-letters');
-  const galaxyRoot = document.getElementById('intro-galaxy');
-  const galaxyCanvas = document.getElementById('intro-galaxy-canvas');
-  const galaxyPortrait = document.getElementById('intro-galaxy-portrait');
 
   if (!intro || !lettersRoot) return;
 
@@ -23,14 +20,10 @@
   const timers = [];
   let particleRaf = null;
   let morphRaf = null;
-  let galaxyRaf = null;
   let ambientParticles = [];
   let trailParticles = [];
-  let galaxyParticles = [];
   let particleCtx = null;
-  let galaxyCtx = null;
   let onResize = null;
-  let onGalaxyResize = null;
   let finished = false;
 
   function trackTimeout(fn, ms) {
@@ -41,10 +34,6 @@
 
   function wait(ms) {
     return new Promise((resolve) => trackTimeout(resolve, ms));
-  }
-
-  function easeInOutCubic(t) {
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
   function easeOutBack(t) {
@@ -204,23 +193,10 @@
     morphRaf = null;
   }
 
-  function stopGalaxy() {
-    if (galaxyRaf) cancelAnimationFrame(galaxyRaf);
-    galaxyRaf = null;
-    galaxyParticles = [];
-    if (galaxyCtx && galaxyCanvas) {
-      galaxyCtx.clearRect(0, 0, galaxyCanvas.width, galaxyCanvas.height);
-    }
-  }
-
   function cleanupListeners() {
     if (onResize) {
       window.removeEventListener('resize', onResize);
       onResize = null;
-    }
-    if (onGalaxyResize) {
-      window.removeEventListener('resize', onGalaxyResize);
-      onGalaxyResize = null;
     }
     timers.forEach(clearTimeout);
     timers.length = 0;
@@ -231,7 +207,6 @@
     finished = true;
     stopParticles();
     stopMorph();
-    stopGalaxy();
     cleanupListeners();
     document.documentElement.classList.remove('intro-pending');
     document.documentElement.classList.add('intro-done');
@@ -239,13 +214,6 @@
     intro.className = 'cinematic-intro';
     intro.setAttribute('hidden', '');
     intro.setAttribute('aria-hidden', 'true');
-    if (galaxyRoot) {
-      galaxyRoot.classList.remove('is-active');
-      galaxyRoot.setAttribute('aria-hidden', 'true');
-    }
-    if (galaxyPortrait) {
-      galaxyPortrait.classList.remove('is-formed', 'is-revealing', 'is-visible');
-    }
     lettersRoot.innerHTML = '';
     window.dispatchEvent(new Event('scroll'));
   }
@@ -522,232 +490,6 @@
     });
   }
 
-  /**
-   * Galaxy particles swirl in the space below the title and converge into a
-   * FACE-ONLY particle portrait sampled from the photo's face region
-   * (window.__INTRO_FACE).
-   * The original photograph is never displayed — every point is drawn from
-   * the sampled face pixels, so features, glasses and hair stay recognisable.
-   */
-  function runGalaxyReveal() {
-    return new Promise((resolve) => {
-      if (!galaxyRoot || !galaxyCanvas || !galaxyPortrait) {
-        resolve();
-        return;
-      }
-
-      let settled = false;
-      const done = () => {
-        if (settled) return;
-        settled = true;
-        resolve();
-      };
-
-      // ---- Face particle source generated from the real photograph ----
-      const src = window.__INTRO_FACE;
-      let face = null;
-      if (src && src.b64) {
-        try {
-          const bin = atob(src.b64);
-          const buf = new Uint8Array(bin.length);
-          for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
-          face = {
-            buf: buf,
-            n: Math.floor(buf.length / 5), // x,y,r,g,b per point
-            aspect: src.aspect || 0.608,
-          };
-        } catch (e) {
-          face = null;
-        }
-      }
-      // No source available: skip cleanly (never fall back to the photo).
-      if (!face || !face.n) {
-        done();
-        return;
-      }
-
-      galaxyCtx = galaxyCanvas.getContext('2d');
-      if (!galaxyCtx) {
-        done();
-        return;
-      }
-
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const resizeGalaxy = () => {
-        galaxyCanvas.width = Math.floor(window.innerWidth * dpr);
-        galaxyCanvas.height = Math.floor(window.innerHeight * dpr);
-        galaxyCanvas.style.width = window.innerWidth + 'px';
-        galaxyCanvas.style.height = window.innerHeight + 'px';
-        galaxyCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      };
-      resizeGalaxy();
-      onGalaxyResize = resizeGalaxy;
-      window.addEventListener('resize', onGalaxyResize, { passive: true });
-
-      intro.classList.add('stage-galaxy');
-      galaxyRoot.classList.add('is-active');
-      galaxyRoot.setAttribute('aria-hidden', 'false');
-
-      const isSmall = () => window.innerWidth < 768;
-      // Face geometry — mirrors .intro-galaxy-portrait in style.css.
-      // faceTop sits below the lifted PORTFOLIO title; faceH is capped by the
-      // remaining viewport height so the full head-to-collar always fits.
-      const faceTop = () => window.innerHeight * 0.4;
-      const faceH = () => {
-        const vh = window.innerHeight;
-        const avail = vh - faceTop() - vh * 0.04; // keep a bottom margin
-        return Math.min(vh * 0.6, avail, isSmall() ? 540 : 620);
-      };
-      const faceW = () => faceH() * face.aspect;
-      const cx = () => window.innerWidth * 0.5;
-
-      // White / silver / subtle-blue seeds for the swirling galaxy.
-      const seeds = [
-        [255, 255, 255],
-        [220, 230, 250],
-        [180, 210, 255],
-        [160, 185, 240],
-      ];
-
-      // One particle per sampled face pixel (sub-sampled on small screens).
-      const stride = isSmall() ? 2 : 1;
-      galaxyParticles = [];
-
-      for (let i = 0; i < face.n; i += stride) {
-        const o = i * 5;
-        const seed = seeds[(i + (i >> 3)) % seeds.length];
-        const sx = Math.random() * window.innerWidth;
-        const sy = window.innerHeight * (0.2 + Math.random() * 0.8);
-        
-        // Add small jitter to targets to break the grid look.
-        const jitter = (Math.random() - 0.5) * 1.8;
-
-        galaxyParticles.push({
-          nx: face.buf[o] / 255, // 0..1 across the face box
-          ny: face.buf[o + 1] / 255, // 0..1 down the face box
-          tr: face.buf[o + 2], 
-          tg: face.buf[o + 3], 
-          tb: face.buf[o + 4], 
-          sr: seed[0],
-          sg: seed[1],
-          sb: seed[2],
-          sx: sx,
-          sy: sy,
-          x: sx,
-          y: sy,
-          delay: Math.random() * 0.35, // slightly longer stagger
-          angle: Math.random() * Math.PI * 2,
-          spin: (Math.random() - 0.5) * 0.035,
-          radius: Math.random() * 1.6 + 0.8,
-          a: Math.random() * 0.5 + 0.5,
-          phase: Math.random() * Math.PI * 2,
-          tx: 0,
-          ty: 0,
-          jitterX: jitter,
-          jitterY: jitter * 0.8,
-        });
-      }
-
-      function refreshTargets() {
-        const w = faceW();
-        const h = faceH();
-        const left = cx() - w / 2;
-        const top = faceTop();
-        for (const p of galaxyParticles) {
-          p.tx = left + p.nx * w + p.jitterX;
-          p.ty = top + p.ny * h + p.jitterY;
-        }
-      }
-      refreshTargets();
-
-      const start = performance.now();
-      const GATHER_MS = 2200; // slightly slower for cinematic feel
-      const HOLD_MS = 2000;   // 2 second hold as requested
-      const END_MS = GATHER_MS + HOLD_MS;
-      let formed = false;
-
-      const tick = (now) => {
-        if (finished) {
-          done();
-          return;
-        }
-        const elapsed = now - start;
-        const gatherT = Math.min(1, elapsed / GATHER_MS);
-        const ease = easeInOutCubic(gatherT);
-        const W = window.innerWidth;
-        const H = window.innerHeight;
-
-        galaxyCtx.clearRect(0, 0, W, H);
-
-        // Faint nebula centred on the forming face (never a rectangle).
-        const fh = faceH();
-        const grd = galaxyCtx.createRadialGradient(
-          cx(),
-          faceTop() + fh * 0.45,
-          20,
-          cx(),
-          faceTop() + fh * 0.45,
-          Math.max(fh * 0.85, 250)
-        );
-        grd.addColorStop(0, `rgba(110, 100, 200, ${0.12 * ease})`);
-        grd.addColorStop(0.5, `rgba(60, 90, 160, ${0.08 * ease})`);
-        grd.addColorStop(1, 'rgba(0,0,0,0)');
-        galaxyCtx.fillStyle = grd;
-        galaxyCtx.fillRect(0, 0, W, H);
-
-        for (const p of galaxyParticles) {
-          p.angle += p.spin;
-
-          const lt =
-            gatherT <= p.delay ? 0 : Math.min(1, (gatherT - p.delay) / (1 - p.delay));
-          const e = easeInOutCubic(lt);
-
-          const swirlX = Math.cos(p.angle + p.phase) * 35 * (1 - e);
-          const swirlY = Math.sin(p.angle * 1.2 + p.phase) * 25 * (1 - e);
-          p.x = p.sx + (p.tx - p.sx) * e + swirlX;
-          p.y = p.sy + (p.ty - p.sy) * e + swirlY;
-
-          const cr = (p.sr + (p.tr - p.sr) * e) | 0;
-          const cg = (p.sg + (p.tg - p.sg) * e) | 0;
-          const cb = (p.sb + (p.tb - p.sb) * e) | 0;
-
-          let alpha = p.a * (0.4 + e * 0.6);
-          if (gatherT >= 1) {
-            alpha *= 0.75 + 0.25 * Math.sin(now * 0.0035 + p.phase);
-          }
-
-          galaxyCtx.beginPath();
-          galaxyCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          galaxyCtx.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
-          galaxyCtx.fill();
-        }
-
-        if (!formed && elapsed >= GATHER_MS) {
-          formed = true;
-          galaxyPortrait.classList.add('is-formed'); 
-        }
-
-        if (elapsed >= END_MS) {
-          // Do NOT call stopGalaxy() here — let the face stay visible 
-          // during the stage-reveal curtain animation.
-          done();
-          return;
-        }
-
-        galaxyRaf = requestAnimationFrame(tick);
-      };
-
-      galaxyRaf = requestAnimationFrame(tick);
-      // Safety unlock
-      trackTimeout(() => {
-        if (!settled) {
-          stopGalaxy();
-          done();
-        }
-      }, END_MS + 1200);
-    });
-  }
-
   async function runSequence() {
     setupParticles();
 
@@ -778,13 +520,8 @@
     // STAGE 2 — progressive character transformation from ISHAAN to PORTFOLIO
     const plan = buildMorphPlan(fromSlots, toSlots);
     await runMorph(fromEls, fromSlots, toSlots, plan);
-    await wait(750); // hold PORTFOLIO
 
-    // STAGE 3 — galaxy converge + actual photo materialize (intro-only)
-    await runGalaxyReveal();
-
-    // STAGE 4 — curtain reveal into existing portfolio
-    intro.classList.remove('stage-galaxy');
+    // STAGE 3 — curtain reveal into existing portfolio
     intro.classList.add('stage-reveal');
     await waitForCurtain();
     finishIntro();
