@@ -296,6 +296,25 @@ html.intro-done .cinematic-intro {
   mask-repeat: no-repeat;
 }
 
+/* Ambient light pool sitting BEHIND the portrait so the subject separates from
+   the backdrop instead of being pasted onto it. A soft radial — no edge, no
+   ring — and it has faded to nothing well before the lower body, so it can
+   never read as a shape of its own. It inherits the container's horizontal mask. */
+.intro-portrait::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 64% 52% at 50% 43%,
+    rgba(168, 85, 247, 0.17) 0%,
+    rgba(139, 92, 246, 0.1) 36%,
+    rgba(124, 58, 237, 0.04) 60%,
+    rgba(124, 58, 237, 0) 78%
+  );
+}
+
 /* The intro portrait shows ONLY the original PNG — no circle frame, border,
    ring or glow. A restrained drop-shadow (which follows the image's own
    silhouette/alpha) gives depth without adding a decorative shape or any
@@ -309,8 +328,15 @@ html.intro-done .cinematic-intro {
   border: 0;
   border-radius: 0;
   background: transparent;
-  filter: drop-shadow(0 26px 48px rgba(0, 0, 0, 0.62))
-    drop-shadow(0 0 34px rgba(168, 85, 247, 0.16));
+  /* Layered, directional lighting. Every drop-shadow traces the PNG's own
+     silhouette, so the light hugs the hair, glasses, shoulders and suit while
+     the interior pixels (the face) are never touched:
+       1. cool purple rim from the upper-left  — the key light
+       2. violet bounce from the lower-right    — the fill light
+       3. deep contact shadow to the lower-right — grounds the subject in space */
+  filter: drop-shadow(-6px -8px 18px rgba(196, 151, 255, 0.28))
+    drop-shadow(8px 6px 24px rgba(139, 92, 246, 0.18))
+    drop-shadow(10px 28px 44px rgba(0, 0, 0, 0.62));
   z-index: 1;
   /* SEAMLESS BLEND — vertical axis.
      The bottom 20% of the bitmap is a solid, full-width opaque block, so this
@@ -338,6 +364,50 @@ html.intro-done .cinematic-intro {
   );
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
+}
+
+/* Directional key light on the subject. A soft wash falls from the upper-left
+   across the brow, cheekbone, glasses and the lit shoulder, giving the face and
+   suit volumetric depth instead of a flat print.
+   The wash is confined to the subject's own volume by a soft elliptical mask
+   that reaches zero well before the box edges, so it can never reach the
+   backdrop or create a rectangular boundary. A gradient mask is used instead
+   of a raster one on purpose: Chrome fetches CSS raster masks in CORS mode,
+   which is blocked for a file:// page, so a url() mask would silently drop out
+   locally (and error in the console) while working over http://. The gradient
+   behaves identically in both. Blended with soft-light so it modulates the
+   photo's own luminance — strengthening the lit side without washing it out or
+   flattening the shadows. */
+.intro-portrait-light {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    126deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.14) 24%,
+    rgba(255, 255, 255, 0.05) 41%,
+    rgba(255, 255, 255, 0) 58%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 48% 42% at 47% 36%,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.86) 40%,
+    rgba(0, 0, 0, 0.4) 68%,
+    rgba(0, 0, 0, 0) 88%
+  );
+  mask-image: radial-gradient(
+    ellipse 48% 42% at 47% 36%,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.86) 40%,
+    rgba(0, 0, 0, 0.4) 68%,
+    rgba(0, 0, 0, 0) 88%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  mix-blend-mode: soft-light;
+  opacity: 0.85;
 }
 
 /* Lift the settled PORTFOLIO title while the portrait appears below it.

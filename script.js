@@ -385,18 +385,18 @@
         {
           opacity: 0,
           transform:
-            'perspective(1500px) translate3d(0, 46px, -80px) scale(0.9) rotateX(7deg)',
+            'perspective(1400px) translate3d(0, 54px, -140px) scale(0.88) rotateX(9deg) rotateY(-4deg)',
         },
         {
           opacity: 1,
           transform:
-            'perspective(1500px) translate3d(0, -8px, 0) scale(1.014) rotateX(-1.5deg)',
+            'perspective(1400px) translate3d(0, -9px, -10px) scale(1.016) rotateX(-1.8deg) rotateY(1.2deg)',
           offset: 0.7,
         },
         {
           opacity: 1,
           transform:
-            'perspective(1500px) translate3d(0, 0, 0) scale(1) rotateX(0deg)',
+            'perspective(1400px) translate3d(0, 0, 0) scale(1) rotateX(0deg) rotateY(0deg)',
         },
       ],
       { duration: 1050, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
@@ -455,17 +455,23 @@
 
     // Scale shrinks in even steps across the whole flight (never a sudden
     // drop at the end), with a gentle arc and a subtle 3D lean for depth.
+    // The flight also gains a yaw sway, a slight pitch and a negative-Z arc so
+    // the portrait reads as receding through space rather than sliding flat.
+    // Every 3D term is 0 at p = 0 and p = 1, so the departure box and the
+    // landing box stay mathematically exact.
     const arc = Math.min(64, Math.abs(dy) * 0.12 + 26);
     const stops = [0, 0.32, 0.66, 1];
     const frames = stops.map((p) => {
       const s = 1 + (scale - 1) * p;
       const x = dx * p;
       const y = dy * p - Math.sin(Math.PI * p) * arc;
-      const lean = -7 * Math.sin(Math.PI * p);
-      const depth = 70 * Math.sin(Math.PI * p);
+      const sway = Math.sin(Math.PI * p);
+      const lean = -6.5 * sway;
+      const tilt = 3.5 * sway;
+      const depth = -70 * sway;
       return {
         offset: p,
-        transform: `perspective(1500px) translate3d(${x}px, ${y}px, ${depth}px) rotateY(${lean}deg) scale(${s})`,
+        transform: `perspective(1400px) translate3d(${x}px, ${y}px, ${depth}px) rotateX(${tilt}deg) rotateY(${lean}deg) scale(${s})`,
       };
     });
 
