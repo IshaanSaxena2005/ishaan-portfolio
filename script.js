@@ -379,15 +379,14 @@
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    // 75% of the previous reveal size, but still always inside the viewport.
-    const size = Math.max(180, Math.min(vh * 0.525, vw * 0.69, 555));
+    // Large cinematic portrait: fills the marked reference area —
+    // approximately 78% of viewport width or 82% of viewport height,
+    // whichever fits first, capped at 900px for very large screens.
+    const size = Math.max(260, Math.min(vh * 0.82, vw * 0.78, 900));
     const left = vw / 2 - size / 2;
-    // Resting spot — a touch lower than before, so the lower boundary reaches
-    // toward the bottom edge of the composition and the silhouette reads as
-    // having risen from below it. The clamp leaves a clear gap under the lifted
-    // title on short viewports, and stops the portrait from being stranded at
-    // the very bottom of tall, width-limited ones.
-    const top = Math.max(vh * 0.3, Math.min(vh * 0.48, vh * 0.985 - size));
+    // Position: sits just below the PORTFOLIO heading (~15–20% from top)
+    // and extends toward the bottom of the intro, matching the reference.
+    const top = Math.max(vh * 0.13, Math.min(vh * 0.18, vh * 0.98 - size));
 
     portraitEl.style.width = size + 'px';
     portraitEl.style.height = size + 'px';
@@ -410,13 +409,22 @@
 
     const duration = 1100;
 
-    // OUTER container: upward travel only — no opacity here so the ease-out
-    // curve does not drag the opacity along with it (which would make the fade
-    // imperceptible until the very end of the movement).
+    // OUTER container: upward travel + scale (1.25 → 1).
+    // Scale is composed into the same transform string so there is no conflict.
+    // It uses a slightly softer ease-in-out so the shrink feels cinematic and
+    // independent from the movement's ease-out deceleration.
+    // Starting at 125% makes the portrait noticeably large on frame 0;
+    // it settles at exactly 100% (scale(1)) so no layout dimension changes.
+    const startScale = 1.25;
     const rise = portraitEl.animate(
       [
-        { transform: `perspective(1500px) translate3d(0, ${startY}px, ${startDepth}px)` },
-        { transform: 'perspective(1500px) translate3d(0, 0, 0)' },
+        {
+          transform: `perspective(1500px) translate3d(0, ${startY}px, ${startDepth}px) scale(${startScale})`,
+          easing: 'cubic-bezier(0.25, 0, 0.2, 1)',
+        },
+        {
+          transform: 'perspective(1500px) translate3d(0, 0, 0) scale(1)',
+        },
       ],
       { duration, easing: 'cubic-bezier(0.33, 0, 0.2, 1)', fill: 'forwards' }
     );
@@ -433,30 +441,18 @@
       { duration, easing: 'linear', fill: 'forwards' }
     );
 
-    // INNER image: scale (1.22 → 1) and brightness (1.5 → 1), composed with
-    // the existing drop-shadow. By animating the img directly the container
-    // dimensions are untouched, so the visual effect is the image shrinking
-    // inside a fixed frame while also dimming from a blown-out start.
-    const imgStartScale = 1.22;
+    // INNER image: brightness only (1.5 → 1), composed with the drop-shadow.
+    // Scale is handled on the outer container above; animating scale here too
+    // would compound them and over-shrink the image.
     const shadowBase =
       'drop-shadow(0 26px 48px rgba(0,0,0,0.62)) drop-shadow(0 0 34px rgba(168,85,247,0.16))';
     let innerAnim = null;
     if (portraitImg) {
       innerAnim = portraitImg.animate(
         [
-          {
-            transform: `scale(${imgStartScale})`,
-            filter: `brightness(1.5) ${shadowBase}`,
-          },
-          {
-            offset: 0.4,
-            transform: `scale(${1 + (imgStartScale - 1) * 0.35})`,
-            filter: `brightness(1.2) ${shadowBase}`,
-          },
-          {
-            transform: 'scale(1)',
-            filter: `brightness(1) ${shadowBase}`,
-          },
+          { filter: `brightness(1.5) ${shadowBase}` },
+          { offset: 0.45, filter: `brightness(1.2) ${shadowBase}` },
+          { filter: `brightness(1) ${shadowBase}` },
         ],
         { duration, easing: 'linear', fill: 'forwards' }
       );
