@@ -363,10 +363,16 @@
   }
 
   /**
-   * STAGE 3 — the portrait materialises large and centred, just below the
-   * lifted PORTFOLIO title, with a cinematic 3D entrance, then hands straight
-   * over to the travel. Only the raw PNG silhouette is shown (no circle
-   * frame/ring) with a restrained depth shadow.
+   * STAGE 3 — the portrait RISES into the composition.
+   *
+   * It begins completely below the bottom edge of the overlay (whose own
+   * overflow clips it), oversized and bright, then travels up into view while
+   * shrinking and losing brightness, and settles a touch lower than before so
+   * the silhouette reads as having emerged from below the frame and out of the
+   * dark. Only the raw PNG silhouette is shown (no circle frame/ring) with a
+   * restrained depth shadow, and its lower edge never becomes a hard line: the
+   * image keeps its own vertical fade mask, so the shoulders dissolve into the
+   * black instead of stopping at a rectangle.
    */
   async function runPortraitReveal() {
     if (!portraitEl) return;
@@ -376,8 +382,12 @@
     // 75% of the previous reveal size, but still always inside the viewport.
     const size = Math.max(180, Math.min(vh * 0.525, vw * 0.69, 555));
     const left = vw / 2 - size / 2;
-    // Sit in the lower-centre of the screen, clear of the lifted title.
-    const top = Math.max(vh * 0.3, Math.min(vh * 0.32, vh * 0.97 - size));
+    // Resting spot — a touch lower than before, so the lower boundary reaches
+    // toward the bottom edge of the composition and the silhouette reads as
+    // having risen from below it. The clamp leaves a clear gap under the lifted
+    // title on short viewports, and stops the portrait from being stranded at
+    // the very bottom of tall, width-limited ones.
+    const top = Math.max(vh * 0.3, Math.min(vh * 0.48, vh * 0.985 - size));
 
     portraitEl.style.width = size + 'px';
     portraitEl.style.height = size + 'px';
@@ -387,33 +397,58 @@
     // Lift the settled title so it never overlaps the portrait.
     intro.classList.add('stage-portrait');
 
-    const entrance = portraitEl.animate(
+    // ENTRANCE — where the portrait comes from. The start offset is solved from
+    // the resting box, the entrance scale and the perspective pull-in, so the
+    // whole silhouette really is off the bottom of the screen on frame 0 at
+    // every viewport (it is clipped, so nothing shows above the fold before the
+    // rise starts). Nothing here is hard-coded to one screen size.
+    const startScale = 1.28;
+    const startDepth = 90;
+    const depthMag = 1500 / (1500 - startDepth);
+    const startY =
+      (vh + vh * 0.06 - (top + size / 2)) / depthMag + (size * startScale) / 2;
+
+    const duration = 1100;
+
+    // The rise itself: one continuous easing curve, so the portrait decelerates
+    // into its resting spot instead of stepping. No overshoot and no rotation —
+    // a single clean upward glide.
+    const rise = portraitEl.animate(
       [
         {
           opacity: 0,
-          transform:
-            'perspective(1500px) translate3d(0, 46px, -80px) scale(0.9) rotateX(7deg)',
+          transform: `perspective(1500px) translate3d(0, ${startY}px, ${startDepth}px) scale(${startScale})`,
         },
         {
           opacity: 1,
-          transform:
-            'perspective(1500px) translate3d(0, -8px, 0) scale(1.014) rotateX(-1.5deg)',
-          offset: 0.7,
-        },
-        {
-          opacity: 1,
-          transform:
-            'perspective(1500px) translate3d(0, 0, 0) scale(1) rotateX(0deg)',
+          transform: 'perspective(1500px) translate3d(0, 0, 0) scale(1)',
         },
       ],
-      { duration: 650, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }
+      { duration, easing: 'cubic-bezier(0.33, 0, 0.2, 1)', fill: 'forwards' }
     );
 
-    await entrance.finished.catch(() => {});
-    commitAnimation(entrance, portraitEl, {
+    // The light: a separate animation so the dimming runs on its own steady
+    // ramp while the movement eases out. It starts noticeably brighter than the
+    // settled portrait and loses that lift as it arrives, which is what blends
+    // it into the black rather than leaving it pasted on top of it. It ends at
+    // natural brightness, so the face stays fully readable and the hand-off to
+    // the travel starts from exactly the same image as before.
+    const dim = portraitEl.animate(
+      [
+        { filter: 'brightness(1.38)' },
+        { offset: 0.45, filter: 'brightness(1.2)' },
+        { filter: 'brightness(1)' },
+      ],
+      { duration, easing: 'linear', fill: 'forwards' }
+    );
+
+    await rise.finished.catch(() => {});
+    commitAnimation(rise, portraitEl, {
       opacity: '1',
       transform: 'none',
+      filter: 'none',
     });
+    dim.cancel();
   }
 
   /** Make sure the destination section sits at its final, un-transformed spot. */
@@ -761,7 +796,7 @@
     const plan = buildMorphPlan(fromSlots, toSlots);
     await runMorph(fromEls, fromSlots, toSlots, plan);
 
-    // STAGE 3 — large cinematic portrait reveal below the title
+    // STAGE 3 — the portrait rises from below the frame into its resting spot
     await portraitReady;
     await runPortraitReveal();
 
