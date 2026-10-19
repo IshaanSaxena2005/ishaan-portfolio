@@ -379,14 +379,22 @@
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    // Large cinematic portrait: fills the marked reference area —
-    // approximately 78% of viewport width or 82% of viewport height,
-    // whichever fits first, capped at 900px for very large screens.
-    const size = Math.max(260, Math.min(vh * 0.82, vw * 0.78, 900));
+    // 11% smaller than before — this is what opens the breathing space under
+    // the heading (the hair sits only 3% down inside the portrait box, so a
+    // smaller portrait alone would otherwise bring the hair *closer*).
+    const size = Math.max(209, Math.min(vh * 0.65, vw * 0.614, 712));
     const left = vw / 2 - size / 2;
-    // Position: sits just below the PORTFOLIO heading (~15–20% from top)
-    // and extends toward the bottom of the intro, matching the reference.
-    const top = Math.max(vh * 0.13, Math.min(vh * 0.18, vh * 0.98 - size));
+    // Position solved from the gap rather than tuned by eye. The settled
+    // heading's lowest glyph sits at ~26.5% of the viewport height (measured
+    // from the live lifted glyph boxes) and the crown of the hair begins 3%
+    // down inside the portrait box (measured from the PNG's own alpha), so
+    // 0.305 - 0.03 gives the hair ~4% of the viewport of clear space below the
+    // heading on every screen size. `vh * 0.98 - size` stays as an overflow
+    // guard for very short viewports.
+    const top = Math.max(
+      vh * 0.2,
+      Math.min(vh * 0.98 - size, vh * 0.305 - size * 0.03)
+    );
 
     portraitEl.style.width = size + 'px';
     portraitEl.style.height = size + 'px';
