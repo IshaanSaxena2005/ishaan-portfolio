@@ -397,58 +397,85 @@
     // Lift the settled title so it never overlaps the portrait.
     intro.classList.add('stage-portrait');
 
-    // ENTRANCE — where the portrait comes from. The start offset is solved from
-    // the resting box, the entrance scale and the perspective pull-in, so the
-    // whole silhouette really is off the bottom of the screen on frame 0 at
-    // every viewport (it is clipped, so nothing shows above the fold before the
-    // rise starts). Nothing here is hard-coded to one screen size.
-    const startScale = 1.28;
-    const startDepth = 90;
+    // ENTRANCE — where the portrait comes from. The container (portraitEl) stays
+    // at its fixed final dimensions throughout — only position and opacity move.
+    // The inner image (portraitImg) starts enlarged and bright, then shrinks and
+    // dims independently, so the frame never changes size while the image inside
+    // it visibly grows-in.
+    const startDepth = 80;
     const depthMag = 1500 / (1500 - startDepth);
+    // Starting Y is computed so the portrait's top edge is below the viewport.
     const startY =
-      (vh + vh * 0.06 - (top + size / 2)) / depthMag + (size * startScale) / 2;
+      (vh + vh * 0.06 - (top + size / 2)) / depthMag + size / 2;
 
     const duration = 1100;
 
-    // The rise itself: one continuous easing curve, so the portrait decelerates
-    // into its resting spot instead of stepping. No overshoot and no rotation —
-    // a single clean upward glide.
+    // OUTER container: upward travel only — no opacity here so the ease-out
+    // curve does not drag the opacity along with it (which would make the fade
+    // imperceptible until the very end of the movement).
     const rise = portraitEl.animate(
       [
-        {
-          opacity: 0,
-          transform: `perspective(1500px) translate3d(0, ${startY}px, ${startDepth}px) scale(${startScale})`,
-        },
-        {
-          opacity: 1,
-          transform: 'perspective(1500px) translate3d(0, 0, 0) scale(1)',
-        },
+        { transform: `perspective(1500px) translate3d(0, ${startY}px, ${startDepth}px)` },
+        { transform: 'perspective(1500px) translate3d(0, 0, 0)' },
       ],
       { duration, easing: 'cubic-bezier(0.33, 0, 0.2, 1)', fill: 'forwards' }
     );
 
-    // The light: a separate animation so the dimming runs on its own steady
-    // ramp while the movement eases out. It starts noticeably brighter than the
-    // settled portrait and loses that lift as it arrives, which is what blends
-    // it into the black rather than leaving it pasted on top of it. It ends at
-    // natural brightness, so the face stays fully readable and the hand-off to
-    // the travel starts from exactly the same image as before.
-    const dim = portraitEl.animate(
+    // Opacity runs on its own LINEAR ramp so the fade is clearly visible from
+    // the very first frame: the portrait starts barely-there (0.05) and reaches
+    // fully opaque (1) exactly when the movement ends.  Keeping this separate
+    // prevents the ease-out curve from hiding the fade until the last instant.
+    const fadeIn = portraitEl.animate(
       [
-        { filter: 'brightness(1.38)' },
-        { offset: 0.45, filter: 'brightness(1.2)' },
-        { filter: 'brightness(1)' },
+        { opacity: 0.05 },
+        { opacity: 1 },
       ],
       { duration, easing: 'linear', fill: 'forwards' }
     );
 
+    // INNER image: scale (1.22 → 1) and brightness (1.5 → 1), composed with
+    // the existing drop-shadow. By animating the img directly the container
+    // dimensions are untouched, so the visual effect is the image shrinking
+    // inside a fixed frame while also dimming from a blown-out start.
+    const imgStartScale = 1.22;
+    const shadowBase =
+      'drop-shadow(0 26px 48px rgba(0,0,0,0.62)) drop-shadow(0 0 34px rgba(168,85,247,0.16))';
+    let innerAnim = null;
+    if (portraitImg) {
+      innerAnim = portraitImg.animate(
+        [
+          {
+            transform: `scale(${imgStartScale})`,
+            filter: `brightness(1.5) ${shadowBase}`,
+          },
+          {
+            offset: 0.4,
+            transform: `scale(${1 + (imgStartScale - 1) * 0.35})`,
+            filter: `brightness(1.2) ${shadowBase}`,
+          },
+          {
+            transform: 'scale(1)',
+            filter: `brightness(1) ${shadowBase}`,
+          },
+        ],
+        { duration, easing: 'linear', fill: 'forwards' }
+      );
+    }
+
     await rise.finished.catch(() => {});
+    // Bake the final state into inline styles and cancel both animations so
+    // nothing lingers to conflict with the subsequent travel phase.
+    fadeIn.cancel();
     commitAnimation(rise, portraitEl, {
       opacity: '1',
       transform: 'none',
-      filter: 'none',
     });
-    dim.cancel();
+    if (innerAnim) {
+      commitAnimation(innerAnim, portraitImg, {
+        transform: 'none',
+        filter: '',   // restore CSS class filter (drop-shadow)
+      });
+    }
   }
 
   /** Make sure the destination section sits at its final, un-transformed spot. */
