@@ -1250,13 +1250,16 @@ html.intro-done .cinematic-intro {
    548px column height and computes to ~975px wide inside a 572px cell, which
    overflowed and clipped the "Top Repositories" panel. Measured crop at rest
    is now 0.05%.
-   The bitmap itself also carries a dark outer bezel baked into the export,
-   so even at `cover` the real UI reads inset. Rather than resizing the
-   frame (which must stay consistent with the other cards), the image is
-   enlarged ~18% and centered as an absolutely-positioned child; the
-   wrapper's existing overflow:hidden trims the bezel uniformly on all
-   sides. Uses an enlarged box instead of `transform: scale` so the
-   reduced-motion override (which zeroes transforms) can't undo the fill. */
+   The bitmap is a monitor mockup on a dark backdrop: ~5% of outer padding
+   plus the monitor's own black bezel (~another 4%) surround the dashboard
+   glass. Filling at ~125% uses exactly that ~10% dead band — the dashboard
+   fills the frame edge-to-edge like spendwise.png and gig.png, while every
+   panel (top search bar, bottom rows) stays fully visible (verified down to
+   the mask crop renders). The image is an absolutely-positioned, centered,
+   enlarged child; the wrapper's existing overflow:hidden trims all four
+   sides uniformly. An enlarged box is used instead of `transform: scale` so
+   the reduced-motion override (which zeroes transforms) can't undo the
+   fill. */
 .frame-devproof {
   aspect-ratio: 16 / 9;
   width: 100%;
@@ -1265,10 +1268,10 @@ html.intro-done .cinematic-intro {
 }
 .frame-devproof .project-img {
   position: absolute;
-  left: -9%;
-  top: -9%;
-  width: 118%;
-  height: 118%;
+  left: -12.5%;
+  top: -12.5%;
+  width: 125%;
+  height: 125%;
   object-fit: cover;
   object-position: center;
 }
