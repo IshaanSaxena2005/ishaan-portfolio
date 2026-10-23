@@ -600,11 +600,12 @@ html.intro-done .cinematic-intro {
   padding: 140px 8% 80px;
   position: relative;
   background: var(--bg-primary);
+  overflow-x: hidden;
 }
 .home-content {
-  max-width: 600px;
-  flex: 1;
-  padding-right: 80px;
+  max-width: 550px;
+  flex: 0 0 47%;
+  padding-right: 60px;
   z-index: 2;
 }
 .home-content h3 {
@@ -632,12 +633,13 @@ html.intro-done .cinematic-intro {
   font-weight: 500;
 }
 .home-content h1 {
-  font-size: 80px;
+  font-size: 68px;
   font-weight: 700;
   margin: 0 0 25px 0;
   line-height: 1.05;
-  letter-spacing: -2.5px;
+  letter-spacing: -2px;
   color: var(--text-primary);
+  white-space: nowrap;
   opacity: 0;
   animation: slideRight 1s ease forwards 1s;
 }
@@ -711,11 +713,11 @@ html.intro-done .cinematic-intro {
   border-color: var(--accent-purple);
   transform: translateY(-3px);
 }
-/* Cinematic Portrait - dp.png - Reference Style */
+/* Cinematic Portrait - reference.png - Reference Style */
 .home-photo {
   position: relative;
-  width: 50%;
-  max-width: 650px;
+  flex: 0 0 53%;
+  max-width: 700px;
   height: auto;
   aspect-ratio: 3/4;
   display: flex;
@@ -728,14 +730,13 @@ html.intro-done .cinematic-intro {
   border-radius: 0;
   overflow: hidden;
   z-index: 1;
-  margin-right: -5%;
 }
 .profile-pic {
   width: 100%;
   height: 100%;
   border-radius: 0;
   object-fit: cover;
-  object-position: center 30%;
+  object-position: center 20%;
   border: none;
   box-shadow: none;
   filter: grayscale(100%) contrast(1.1);
@@ -1537,14 +1538,16 @@ html.intro-done .cinematic-intro {
     padding: 100px 6% 60px;
   }
   .home-content {
-    max-width: 500px;
+    max-width: 450px;
+    flex: 0 0 50%;
     padding-right: 40px;
   }
   .home-content h1 {
-    font-size: 64px;
+    font-size: 52px;
+    white-space: normal;
   }
   .home-photo {
-    width: 45%;
+    flex: 0 0 50%;
     max-width: 500px;
   }
 }
@@ -1571,6 +1574,7 @@ html.intro-done .cinematic-intro {
   .home-content h1 {
     font-size: 52px;
     margin-bottom: 20px;
+    white-space: normal;
   }
   .home-content h3 {
     font-size: 13px;
@@ -1584,16 +1588,14 @@ html.intro-done .cinematic-intro {
   }
   .home-buttons {
     justify-content: center;
+    flex-direction: column;
+    gap: 15px;
   }
   .home-photo {
     width: 100%;
     max-width: 400px;
     margin-bottom: 40px;
     aspect-ratio: 3/4;
-  }
-  .home-buttons {
-    flex-direction: column;
-    gap: 15px;
   }
   .btn-primary, .btn-secondary {
     width: 100%;
