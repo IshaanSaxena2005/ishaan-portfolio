@@ -1234,6 +1234,24 @@ html.intro-done .cinematic-intro {
   object-fit: cover;
   object-position: center;
 }
+/* gig.png is a 1024x1024 export whose dashboard only occupies the central
+   942x766 (~1.23:1) - the rest is empty padding baked into the bitmap. The
+   default `contain` scaled the whole square down, so the dashboard floated
+   in the middle with ~70px of dead band above and below it. Sizing this one
+   frame to the content's own ratio and switching it to `cover` trims only
+   that empty padding: the dashboard now spans the frame edge to edge (measured
+   512x416 in a 558x454 frame, ~19px clearance, versus 500x406 with ~70px of
+   band before) with no distortion and none of its UI cropped. min-height is
+   released below so the frame keeps its ratio instead of being stretched by
+   the grid row. */
+.frame-gigshield {
+  aspect-ratio: 1.23 / 1;
+  min-height: 0;
+}
+.frame-gigshield .project-img {
+  object-fit: cover;
+  object-position: center;
+}
 /* Image hover - only image animates */
 .project-img-wrapper:hover {
   transform: scale(1.05);
