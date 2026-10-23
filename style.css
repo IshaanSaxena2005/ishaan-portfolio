@@ -476,10 +476,10 @@ html.intro-done .cinematic-intro {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  /* Static deep-blue fallback: what you see if the video never paints
+  /* Static deep-navy fallback: what you see if the video never paints
      (autoplay blocked, decode failure, or prefers-reduced-motion). */
   background:
-    radial-gradient(ellipse 90% 70% at 50% 25%, #143a78 0%, #0a1d47 55%, #050b1e 100%);
+    radial-gradient(ellipse 90% 70% at 50% 25%, #12325c 0%, #0b1f3f 55%, #05101f 100%);
 }
 .site-video-bg__video {
   position: absolute;
@@ -488,13 +488,14 @@ html.intro-done .cinematic-intro {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* The footage is a very dark blue light-study, so it needs a real lift
-     before the veil goes on — otherwise it reads as flat black. */
-  filter: saturate(1.45) brightness(1.55) contrast(1.02);
+  /* The footage is a very dark blue light-study, so it needs a lift before
+     the veil goes on — but staying short of the earlier over-bright look. */
+  filter: saturate(1.25) brightness(1.32) contrast(1.0);
   opacity: 1;
 }
-/* Screen-blended blue wash: lifts the footage's near-black areas into a
-   rich deep-blue tone without dulling the moving highlights underneath. */
+/* Screen-blended navy wash: a lighter touch than the first pass. It lifts
+   the footage's near-black areas just enough for a deep-navy tone while the
+   charcoal veil below does the readability work. */
 .site-video-bg::before {
   content: '';
   position: absolute;
@@ -502,13 +503,13 @@ html.intro-done .cinematic-intro {
   z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 85% 72% at 50% 34%, rgba(37, 99, 235, 0.34) 0%, rgba(14, 45, 125, 0.20) 58%, rgba(5, 18, 52, 0.10) 100%),
-    linear-gradient(180deg, rgba(14, 44, 120, 0.18) 0%, rgba(5, 16, 46, 0.10) 100%);
+    radial-gradient(ellipse 85% 72% at 50% 34%, rgba(30, 80, 185, 0.28) 0%, rgba(12, 38, 94, 0.16) 58%, rgba(4, 12, 30, 0.08) 100%),
+    linear-gradient(180deg, rgba(12, 36, 92, 0.14) 0%, rgba(4, 12, 30, 0.08) 100%);
   mix-blend-mode: screen;
 }
-/* Blue-tinted veil over the video plane: enough depth for white text and
-   purple accents to stay readable, light enough that the moving blue
-   light still reads clearly behind every section after the hero. */
+/* Blue-tinted charcoal veil over the video plane: deep enough for white text
+   and purple accents to stay the focus, still light enough that the moving
+   blue light reads behind every section after the hero. */
 .site-video-bg::after {
   content: '';
   position: absolute;
@@ -516,8 +517,8 @@ html.intro-done .cinematic-intro {
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(4, 12, 34, 0.32) 0%, rgba(6, 20, 54, 0.18) 45%, rgba(3, 9, 28, 0.42) 100%),
-    radial-gradient(ellipse 90% 74% at 50% 40%, rgba(24, 72, 190, 0.12) 0%, rgba(3, 9, 28, 0.38) 100%);
+    linear-gradient(180deg, rgba(3, 8, 20, 0.34) 0%, rgba(4, 10, 26, 0.16) 45%, rgba(2, 6, 14, 0.44) 100%),
+    radial-gradient(ellipse 90% 74% at 50% 40%, rgba(12, 32, 74, 0.08) 0%, rgba(2, 6, 14, 0.38) 100%);
 }
 @media (prefers-reduced-motion: reduce) {
   /* Motion is not allowed: keep the static dark fallback only. */
@@ -951,7 +952,7 @@ html.intro-done .cinematic-intro {
    reference (186 x 59) down to this layout's text scale. */
 .about-text .btn-box {
   display: inline-block;
-  margin-top: 44px;
+  margin-top: 18px;
   padding: 13px 32px;
   background: var(--accent-purple);
   border-radius: 999px;
@@ -1248,7 +1249,14 @@ html.intro-done .cinematic-intro {
    must be `auto`: with height:100% the ratio is ignored, the frame keeps the
    548px column height and computes to ~975px wide inside a 572px cell, which
    overflowed and clipped the "Top Repositories" panel. Measured crop at rest
-   is now 0.05%. */
+   is now 0.05%.
+   The bitmap itself also carries a dark outer bezel baked into the export,
+   so even at `cover` the real UI reads inset. Rather than resizing the
+   frame (which must stay consistent with the other cards), the image is
+   enlarged ~18% and centered as an absolutely-positioned child; the
+   wrapper's existing overflow:hidden trims the bezel uniformly on all
+   sides. Uses an enlarged box instead of `transform: scale` so the
+   reduced-motion override (which zeroes transforms) can't undo the fill. */
 .frame-devproof {
   aspect-ratio: 16 / 9;
   width: 100%;
@@ -1256,6 +1264,11 @@ html.intro-done .cinematic-intro {
   min-height: 0;
 }
 .frame-devproof .project-img {
+  position: absolute;
+  left: -9%;
+  top: -9%;
+  width: 118%;
+  height: 118%;
   object-fit: cover;
   object-position: center;
 }
