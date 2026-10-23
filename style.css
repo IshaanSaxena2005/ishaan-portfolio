@@ -599,16 +599,21 @@ html.intro-done .cinematic-intro {
   color: var(--accent-purple);
 }
 
-/* Section backgrounds for monochrome design */
+/* Section backgrounds — the secondary sections are now translucent dark
+   scrims layered over the fixed background video, so the footage reads as a
+   subtle cinematic texture behind the content. The hero stays fully opaque
+   (.home overrides below), so the video is never visible in it. */
 .home {
   background: var(--bg-primary);
   min-height: 100vh;
 }
 .about, .skills-section, .projects, .experience, .certifications, .education, .contact {
-  background: var(--bg-primary);
+  /* ~0.55 black over the veiled video: white text and purple accents keep
+     full contrast while the motion still registers behind the content. */
+  background: rgba(8, 8, 8, 0.55);
 }
 .about:nth-of-type(even), .skills-section, .experience, .education {
-  background: var(--bg-secondary);
+  background: rgba(12, 12, 15, 0.58);
 }
 .home-content h1, .home-content h3, .about-text h2 {
   text-shadow: none;
