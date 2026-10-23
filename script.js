@@ -560,7 +560,7 @@
     settleDestination();
 
     // Brief hold on the complete composition so the final frame is seen intact.
-    await wait(500);
+    await wait(150);
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -734,7 +734,7 @@
     intro.classList.add('stage-dissolve');
 
     /* ---- Pixel dissolve animation ------------------------------------------ */
-    const HOLD = 340;     // intact composition holds before the first block lifts
+    const HOLD = 140;     // intact composition holds before the first block lifts
     const WAVE = 950;     // the radial wave sweeps the whole lattice (matches WAVE_MS)
     const SCATTER = 950;  // each block's straight travel + stepped fade (brisk finish)
     const TOTAL = HOLD + WAVE + SCATTER;
