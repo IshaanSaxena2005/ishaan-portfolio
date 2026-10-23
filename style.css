@@ -1250,11 +1250,13 @@ html.intro-done .cinematic-intro {
    548px column height and computes to ~975px wide inside a 572px cell, which
    overflowed and clipped the "Top Repositories" panel. Measured crop at rest
    is now 0.05%.
-   Layout restored to fill: the image sits statically in the frame at its
-   natural 16:9 with `cover` — since frame and bitmap share the same ratio,
-   the complete dashboard fills the frame with zero cropping and no
-   enlargement chain, keeping a single flow-relative geometry (no absolute
-   child, so the wrapper never reports clipped scroll overflow). */
+   Fill fit (SpendWise-style): the bitmap is a monitor mockup whose dashboard
+   occupies only ~85% of the bitmap height — at plain `cover` the frame's
+   top/bottom show dead backdrop, and the dashboard never reaches the upper
+   and lower frame edges. An enlarged 118% box, centered and clipped by the
+   wrapper's overflow:hidden, trims exactly that dead band so the dashboard
+   spans the frame top to bottom. The enlarged box (not `transform: scale`)
+   keeps the fill safe from the reduced-motion transform override. */
 .frame-devproof {
   aspect-ratio: 16 / 9;
   width: 100%;
@@ -1262,6 +1264,11 @@ html.intro-done .cinematic-intro {
   min-height: 0;
 }
 .frame-devproof .project-img {
+  position: absolute;
+  left: -9%;
+  top: -9%;
+  width: 118%;
+  height: 118%;
   object-fit: cover;
   object-position: center;
 }
@@ -1279,15 +1286,18 @@ html.intro-done .cinematic-intro {
 /* gig.png is a 1024x1024 export whose dashboard only occupies the central
    942x766 (~1.23:1) - the rest is empty padding baked into the bitmap. The
    default `contain` scaled the whole square down, so the dashboard floated
-   in the middle with ~70px of dead band above and below it. Sizing this one
+   in the middle with ~70px of dead band above and below it. Sizing this
    frame to the content's own ratio and switching it to `cover` trims only
-   that empty padding: the dashboard now spans the frame edge to edge (measured
-   512x416 in a 558x454 frame, ~19px clearance, versus 500x406 with ~70px of
-   band before) with no distortion and none of its UI cropped. min-height is
-   released below so the frame keeps its ratio instead of being stretched by
-   the grid row. */
+   that empty padding: with no distortion and none of its UI cropped.
+   Bigger frame (SpendWise-style): ratio was tightened further to 1.05:1 so
+   the frame grows taller in its column and holds its own next to the
+   SpendWise frame, matching that card's height budget. `cover` into the
+   deeper frame scales the bitmap by its height, which crops only ~36px of
+   the bitmap's own empty top/bottom padding — the dashboard still spans
+   nearly edge to edge with no UI lost. min-height stays released so the
+   frame keeps its ratio instead of being stretched by the grid row. */
 .frame-gigshield {
-  aspect-ratio: 1.23 / 1;
+  aspect-ratio: 1.05 / 1;
   min-height: 0;
 }
 .frame-gigshield .project-img {
