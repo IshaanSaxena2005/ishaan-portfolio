@@ -476,10 +476,10 @@ html.intro-done .cinematic-intro {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  /* Static blue-black fallback: what you see if the video never paints
+  /* Static fallback (target palette): what you see if the video never paints
      (autoplay blocked, decode failure, or prefers-reduced-motion). */
   background:
-    radial-gradient(ellipse 90% 70% at 50% 25%, #12305e 0%, #0a1a38 55%, #040a16 100%);
+    radial-gradient(ellipse 90% 70% at 50% 25%, #101629 0%, #0B0D16 55%, #06070C 100%);
 }
 .site-video-bg__video {
   position: absolute;
@@ -490,12 +490,12 @@ html.intro-done .cinematic-intro {
   object-fit: cover;
   /* The footage is a very dark blue light-study, so it needs a lift before
      the veil goes on — but staying short of the earlier over-bright look. */
-  filter: saturate(1.2) brightness(1.12) contrast(1.0);
+  filter: saturate(0.65) brightness(0.72) contrast(1.0);
   opacity: 1;
 }
-/* Screen-blended midnight wash: barely lifts the footage's near-black areas
-   so the moving light still reads on the charcoal, without tinting the
-   website blue. The veil below does the darkening. */
+/* Very subtle dark-navy tint (palette #17233D) under screen blending: adds a
+   faint atmospheric highlight over the desaturated footage only — the dimmed
+   video now supplies its own subdued movement and this barely raises it. */
 .site-video-bg::before {
   content: '';
   position: absolute;
@@ -503,13 +503,13 @@ html.intro-done .cinematic-intro {
   z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 85% 72% at 50% 34%, rgba(30, 88, 195, 0.16) 0%, rgba(12, 36, 92, 0.08) 55%, rgba(4, 10, 26, 0.04) 100%),
-    linear-gradient(180deg, rgba(12, 32, 84, 0.08) 0%, rgba(4, 10, 26, 0.04) 100%);
+    radial-gradient(ellipse 85% 72% at 50% 34%, rgba(23, 35, 61, 0.14) 0%, rgba(11, 13, 22, 0.06) 55%, rgba(4, 5, 9, 0.03) 100%),
+    linear-gradient(180deg, rgba(11, 13, 22, 0.06) 0%, rgba(4, 5, 9, 0.02) 100%);
   mix-blend-mode: screen;
 }
-/* Blue-black veil over the video plane: sits between the pure-black hero and
-   the old bright-navy look — a dark blue-black blend where the footage's
-   moving light clearly registers while charcoal depth and readability hold. */
+/* Charcoal-blue veil over the video plane (palette #08090D / #0B0D16): heavy
+   enough to pull the footage's blue wave down to a subtle midnight detail,
+   open enough that the motion still registers as depth behind the sections. */
 .site-video-bg::after {
   content: '';
   position: absolute;
@@ -517,8 +517,8 @@ html.intro-done .cinematic-intro {
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(2, 5, 12, 0.40) 0%, rgba(3, 7, 17, 0.20) 40%, rgba(1, 3, 8, 0.50) 100%),
-    radial-gradient(ellipse 90% 74% at 50% 40%, rgba(12, 32, 80, 0.07) 0%, rgba(1, 3, 9, 0.40) 100%);
+    linear-gradient(180deg, rgba(8, 9, 13, 0.55) 0%, rgba(11, 13, 22, 0.32) 40%, rgba(5, 6, 10, 0.65) 100%),
+    radial-gradient(ellipse 90% 74% at 50% 40%, rgba(16, 22, 41, 0.10) 0%, rgba(4, 5, 9, 0.52) 100%);
 }
 @media (prefers-reduced-motion: reduce) {
   /* Motion is not allowed: keep the static dark fallback only. */
@@ -687,12 +687,12 @@ html.intro-done .cinematic-intro {
   min-height: 100vh;
 }
 .about, .skills-section, .projects, .experience, .certifications, .education, .contact {
-  /* Blue-black scrim over the veiled video: dark enough for contrast, open
-     enough that the blue motion clearly registers behind content. */
-  background: rgba(5, 10, 26, 0.44);
+  /* Dark charcoal scrim (palette #08090D) over the veiled video: blue becomes
+     a whisper of movement behind content while text and purple accents lead. */
+  background: rgba(8, 9, 13, 0.62);
 }
 .about:nth-of-type(even), .skills-section, .experience, .education {
-  background: rgba(7, 13, 32, 0.50);
+  background: rgba(11, 13, 22, 0.68);
 }
 .home-content h1, .home-content h3, .about-text h2 {
   text-shadow: none;
