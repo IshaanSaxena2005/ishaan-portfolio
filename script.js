@@ -552,17 +552,11 @@
     });
 
     // The image stays rectangular (no border-radius) since the hero now uses
-    // a landscape composition instead of a circular frame.
+    // a rectangular portrait composition instead of a circular frame.
     let shapeAnim = null;
     if (portraitImg) {
       portraitImg.style.borderRadius = '0%';
-      shapeAnim = portraitImg.animate(
-        [
-          { borderRadius: '0%', offset: 0 },
-          { borderRadius: '0%', offset: 1 },
-        ],
-        { duration, easing, fill: 'forwards' }
-      );
+      // No border-radius animation needed
     }
 
     // Retract the portrait's edge-blend masks DURING the final approach, timed so
