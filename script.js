@@ -736,7 +736,7 @@
     /* ---- Pixel dissolve animation ------------------------------------------ */
     const HOLD = 340;     // intact composition holds before the first block lifts
     const WAVE = 950;     // the radial wave sweeps the whole lattice (matches WAVE_MS)
-    const SCATTER = 1250; // each block's straight travel + stepped fade
+    const SCATTER = 950;  // each block's straight travel + stepped fade (brisk finish)
     const TOTAL = HOLD + WAVE + SCATTER;
 
     let erasedCount = 0;
