@@ -543,11 +543,12 @@
    * same font/slots/chrome-gradient/purple glow, the portrait bitmap stamped
    * with its two CSS masks replicated, so the replica is pixel-identical. The
    * DOM layers are hidden in the very frame the replica first shows (no
-   * flash), then the painting erodes: each tile lifts off as a drifting
-   * fragment drawn from the pristine source canvas (every fragment carries
-   * the real composition's pixels) with subtle depth scaling and fade, while
-   * the backdrop cross-fades to transparent and the hero — with its own
-   * untouched portrait — appears beneath.
+   * flash), then a radial wave progressively breaks the whole composition
+   * into same-size square blocks that travel straight off the lattice and
+   * disappear in stepped alpha — the intro's own block-square vocabulary,
+   * no round particles, no glow, no smoke — while the backdrop cross-fades
+   * to transparent and the hero — with its own untouched portrait — appears
+   * beneath.
    * IMPORTANT: no getImageData/toDataURL anywhere — the local PNG taints
    * canvases on file:// origins and readback would throw; drawImage from a
    * tainted canvas is allowed, so the effect is pixel-real and safe.
@@ -642,44 +643,55 @@
       return;
     }
 
-    /* ---- Fragment lattice over the composition's actual boxes -------------- */
-    // Tiles sit on a uniform grid across every glyph rect and the portrait box
-    // — the exact regions the composition occupies. Transparent tiles simply
-    // draw nothing, so fragments only ever originate where pixels exist.
-    const TILE = 11;
+    /* ---- Pixel lattice over the composition's actual boxes ----------------- */
+    // All tiles snap to ONE overlay-wide square grid (PIXEL), so every block
+    // is a same-size square aligned to the same lattice — the intro's own
+    // blocky visual vocabulary carried through to the very end. Transparent
+    // tiles draw nothing, so only composition pixels ever break apart.
+    const PIXEL = 12;
     const boxes = [];
     for (const el of lettersRoot.querySelectorAll('.intro-letter.is-settled-title')) {
       const r = el.getBoundingClientRect();
       if (r.width) boxes.push([r.left, r.top, r.width, r.height, 1]); // keep all text tiles
     }
     const pRect = portraitEl.getBoundingClientRect();
-    if (pRect.width > 2) boxes.push([pRect.left, pRect.top, pRect.width, pRect.height, 0.5]);
+    if (pRect.width > 2) boxes.push([pRect.left, pRect.top, pRect.width, pRect.height, 0.62]);
 
     const fragments = [];
+    const seen = new Set();
     const cx = vw / 2;
     const cy = vh / 2;
+    const WAVE_R = Math.hypot(vw / 2, vh / 2);
+    const WAVE_MS = 950; // one sweep from the centre across the whole frame
     for (const [bx, by, bw, bh, keepRatio] of boxes) {
-      for (let gy = by; gy < by + bh; gy += TILE) {
+      for (let gy = by; gy < by + bh; gy += PIXEL) {
         if (gy >= vh) break;
-        for (let gx = bx; gx < bx + bw; gx += TILE) {
-          const cellX = Math.max(0, Math.min(gx, vw - TILE));
-          const cellY = Math.max(0, Math.min(gy, vh - TILE));
+        for (let gx = bx; gx < bx + bw; gx += PIXEL) {
+          // Global-grid alignment: one lattice everywhere, no per-box jitter.
+          const cellX = Math.max(0, Math.min(Math.round(gx / PIXEL) * PIXEL, vw - PIXEL));
+          const cellY = Math.max(0, Math.min(Math.round(gy / PIXEL) * PIXEL, vh - PIXEL));
+          const key = cellY * 100000 + cellX;
+          if (seen.has(key)) continue;
+          seen.add(key);
           const kept = Math.random() < keepRatio;
-          const ang = Math.random() * Math.PI * 2;
-          const tx = (cellX + TILE / 2 - cx) / (vw * 0.7);
-          const ty = (cellY + TILE / 2 - cy) / (vh * 0.7);
-          const z = Math.random() * 2 - 1; // subtle depth: nearer fragments lead
+          // Progressive break-up: a radial wave starts at the composition's
+          // heart (the portrait) and peels the lattice outward across the
+          // title in order — no random noise pattern.
+          const d = Math.hypot(cellX + PIXEL / 2 - cx, cellY + PIXEL / 2 - cy);
+          const delay = Math.min(WAVE_MS, (d / WAVE_R) * WAVE_MS) + Math.random() * 90;
+          const ang = Math.atan2(cellY + PIXEL / 2 - cy, cellX + PIXEL / 2 - cx) + (Math.random() - 0.5) * 0.5;
+          // Short break-away travel (~15–55px): blocks visibly separate from
+          // the lattice, but the dissolving composition stays recognisable
+          // instead of turning into confetti over the hero.
+          const fly = 14 + Math.random() * 42;
           fragments.push({
             sx: cellX, // pristine source region (never mutated)
             sy: cellY,
-            ox: cellX + (Math.random() - 0.5) * 5, // display-origin jitter
-            oy: cellY + (Math.random() - 0.5) * 5,
-            vx: Math.cos(ang) * 0.5 + tx * 0.9,
-            vy: Math.sin(ang) * 0.5 + ty * 0.9 - 0.2,
-            dist: (95 + Math.random() * 175) * (0.8 + (z + 1) * 0.4),
-            delay: Math.random() * 620,
-            z,
-            kept, // non-kept tiles still erode — they just fly without a fragment
+            ux: Math.cos(ang),
+            uy: Math.sin(ang) + (Math.random() - 0.5) * 0.3, // slight vertical scatter
+            fly,
+            delay,
+            kept, // non-kept tiles still erode — they just break without flying
             erased: false,
           });
         }
@@ -721,11 +733,11 @@
     stopParticles();
     intro.classList.add('stage-dissolve');
 
-    /* ---- Scatter animation -------------------------------------------------- */
-    const HOLD = 340;    // intact composition holds before the first tile lifts
-    const SCATTER = 1600;
-    const MAXDELAY = 620;
-    const TOTAL = HOLD + SCATTER + MAXDELAY;
+    /* ---- Pixel dissolve animation ------------------------------------------ */
+    const HOLD = 340;     // intact composition holds before the first block lifts
+    const WAVE = 950;     // the radial wave sweeps the whole lattice (matches WAVE_MS)
+    const SCATTER = 1250; // each block's straight travel + stepped fade
+    const TOTAL = HOLD + WAVE + SCATTER;
 
     let erasedCount = 0;
     await new Promise((resolve) => {
@@ -736,14 +748,14 @@
           return;
         }
         const t = now - t0;
-        // Erase every tile whose fragment has lifted (before the blit), so
-        // the painting hollows out exactly where its pixels departed.
+        // Erase every tile whose block has broken (before the blit), so the
+        // composition hollows out exactly where its pixels left.
         if (erasedCount < fragments.length) {
           for (const f of fragments) {
             if (f.erased) continue;
-            const lead = t - HOLD - f.delay;
-            if (lead > 0) {
-              ectx.clearRect(f.sx, f.sy, TILE, TILE);
+            const local = t - HOLD - f.delay;
+            if (local > 0) {
+              ectx.clearRect(f.sx, f.sy, PIXEL, PIXEL);
               f.erased = true;
               erasedCount++;
             }
@@ -751,24 +763,27 @@
           dctx.clearRect(0, 0, vw, vh);
           dctx.drawImage(erode, 0, 0); // the eroding composition…
         }
-        // …then the airborne fragments on top.
-        const ease = (k) => 1 - Math.pow(1 - k, 3); // ease-out cubic
+        // …then the broken blocks on top: every block stays a same-size
+        // lattice square, travels in a straight line from where it stood,
+        // and disappears in stepped alpha — pure block feel, no shrink,
+        // no rotation, no glow.
         for (const f of fragments) {
-          if (!f.kept) continue; // eroded silently, no airborne fragment
           const local = t - HOLD - f.delay;
-          if (local <= 0 || !f.erased) continue;
+          if (local <= 0 || f.erased !== true) continue;
+          if (!f.kept) continue; // eroded silently, no airborne block
           const k = Math.min(1, local / SCATTER);
-          const e = ease(k);
-          const a = Math.pow(1 - k, 1.1);
-          if (a <= 0.015) continue;
-          const drift = e * f.dist;
-          const x = f.ox + f.vx * drift;
-          const y = f.oy + f.vy * drift;
-          // Subtle depth: scale breathing driven by the fragment's z value.
-          const s = Math.max(0.5, TILE * 0.92 * (1 - 0.35 * e) * (1 + f.z * 0.35 * e));
+          // Stepped (quantized) alpha: solid blocks vanish in visible pixel-
+          // game jumps instead of a smooth film dissolve.
+          const steps = 4;
+          const a = Math.ceil((1 - k) * steps) / steps;
+          if (a <= 0) continue;
+          // Straight-line drift off the lattice: linear displacement of the
+          // block's fixed `fly` distance, same square size throughout.
+          const x = f.sx + f.ux * f.fly * k;
+          const y = f.sy + f.uy * f.fly * k;
           dctx.globalAlpha = a;
-          dctx.drawImage(snap, f.sx, f.sy, TILE, TILE,
-            x - s / 2, y - s / 2, s, s);
+          dctx.drawImage(snap, f.sx, f.sy, PIXEL, PIXEL,
+            x, y, PIXEL, PIXEL);
         }
         dctx.globalAlpha = 1;
         if (t < TOTAL) {
