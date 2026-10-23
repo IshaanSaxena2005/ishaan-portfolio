@@ -809,7 +809,7 @@ html.intro-done .cinematic-intro {
   opacity: 0;
 }
 
-/* About Section - Match about.png reference exactly */
+/* About Section - Match reference exactly */
 .about {
   display: grid;
   grid-template-columns: 1fr 1.2fr;
@@ -821,16 +821,16 @@ html.intro-done .cinematic-intro {
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 20px;
-  padding: 15px;
+  border-radius: 50%;
+  padding: 0;
   overflow: hidden;
-  border: 2px solid var(--accent-purple);
+  border: 3px solid #8A2BE2;
   background: var(--bg-elevated);
   width: 100%;
-  max-width: 340px;
+  max-width: 300px;
   aspect-ratio: 1/1;
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
-  animation: border-pulse 3s ease-in-out infinite;
+  box-shadow: 0 0 40px rgba(138, 43, 226, 0.5), 0 0 80px rgba(138, 43, 226, 0.3);
+  animation: glow-pulse 2s ease-in-out infinite;
 }
 .About-photo {
   width: 100%;
@@ -841,12 +841,12 @@ html.intro-done .cinematic-intro {
   border: none;
   filter: none;
 }
-@keyframes border-pulse {
+@keyframes glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 0 40px rgba(138, 43, 226, 0.5), 0 0 80px rgba(138, 43, 226, 0.3);
   }
   50% {
-    box-shadow: 0 0 50px rgba(168, 85, 247, 0.5);
+    box-shadow: 0 0 60px rgba(138, 43, 226, 0.7), 0 0 100px rgba(138, 43, 226, 0.4);
   }
 }
 .about-text h2 {
