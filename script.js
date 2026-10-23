@@ -1181,3 +1181,67 @@ window.addEventListener('scroll', () => {
   container.addEventListener('pointerleave', release, { passive: true });
   container.addEventListener('pointercancel', release, { passive: true });
 })();
+
+/* ------------------------------------------------------------------
+   Background video resilience (the fixed non-hero layer in index.html)
+   - Chromium can hold `autoplay` until a user gesture or until the
+     element is attached late, so an explicit play() is attempted once
+     the metadata is ready and again on the first pointer interaction.
+   - If playback is blocked or the file fails to load/decode, the error
+     handler hides the <video> and the layer's static dark gradient
+     (its built-in fallback) stays on screen — no broken frame, no
+     console spam loop.
+   - The tab-hidden pause is a pure battery/CPU win; the video resumes
+     with the same muted loop when the tab returns.
+   ------------------------------------------------------------------ */
+(function initSiteVideo() {
+  const layer = document.querySelector('.site-video-bg');
+  const video = layer && layer.querySelector('.site-video-bg__video');
+  if (!video) return;
+
+  const hideBroken = () => { video.style.display = 'none'; };
+
+  // No movement at all when the user asked for reduced motion: the CSS
+  // hides the element, but stop it here too so it never decodes frames.
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const applyMotionPreference = () => {
+    if (motionQuery.matches) {
+      video.pause();
+      video.removeAttribute('autoplay');
+    } else {
+      video.setAttribute('autoplay', '');
+      const p = video.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    }
+  };
+
+  video.addEventListener('error', hideBroken);
+  video.addEventListener('loadedmetadata', () => {
+    const p = video.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  });
+
+  // Second chance on the first gesture, for browsers that ignore
+  // programmatic muted autoplay until interaction.
+  const nudge = () => {
+    if (video.paused && !motionQuery.matches) {
+      const p = video.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    }
+  };
+  window.addEventListener('pointerdown', nudge, { once: true, passive: true });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      video.pause();
+    } else if (!motionQuery.matches && video.style.display !== 'none') {
+      const p = video.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    }
+  });
+
+  if (typeof motionQuery.addEventListener === 'function') {
+    motionQuery.addEventListener('change', applyMotionPreference);
+  }
+  applyMotionPreference();
+})();
