@@ -490,7 +490,7 @@ html.intro-done .cinematic-intro {
   object-fit: cover;
   /* The footage is a very dark blue light-study, so it needs a lift before
      the veil goes on — but staying short of the earlier over-bright look. */
-  filter: saturate(1.25) brightness(1.32) contrast(1.0);
+  filter: saturate(1.15) brightness(1.22) contrast(1.0);
   opacity: 1;
 }
 /* Screen-blended navy wash: a lighter touch than the first pass. It lifts
@@ -503,8 +503,8 @@ html.intro-done .cinematic-intro {
   z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 85% 72% at 50% 34%, rgba(30, 80, 185, 0.28) 0%, rgba(12, 38, 94, 0.16) 58%, rgba(4, 12, 30, 0.08) 100%),
-    linear-gradient(180deg, rgba(12, 36, 92, 0.14) 0%, rgba(4, 12, 30, 0.08) 100%);
+    radial-gradient(ellipse 85% 72% at 50% 34%, rgba(30, 80, 185, 0.20) 0%, rgba(12, 38, 94, 0.12) 58%, rgba(4, 12, 30, 0.08) 100%),
+    linear-gradient(180deg, rgba(12, 36, 92, 0.11) 0%, rgba(4, 12, 30, 0.08) 100%);
   mix-blend-mode: screen;
 }
 /* Blue-tinted charcoal veil over the video plane: deep enough for white text
@@ -555,6 +555,56 @@ html.intro-done .cinematic-intro {
   opacity: 1;
   transform: translateY(0) scale(1);
   filter: blur(0);
+}
+
+/* ---------------------------------------------------------------------
+   PER-SECTION REVEAL CHARACTER — same trigger (.reveal/.active + the
+   IntersectionObserver in script.js), different motion per section so the
+   scroll story doesn't repeat verbatim. Skills and Certifications keep the
+   base rise exactly as-is (explicitly requested); Home/hero untouched.
+   Each block declares BOTH states: overriding without an .active twin would
+   win the cascade tie against .reveal.active and leave the section stuck in
+   its from-pose. Opacity/blur stay inherited from the base rules; only the
+   transform pose differs. Subtle by design: ≤16deg tilt, ≤70px travel.
+   --------------------------------------------------------------------- */
+/* Education — a card laid down flat: folds forward from above, top-anchored,
+   reading like each degree record being placed onto a desk. */
+.education.reveal {
+  transform: perspective(1100px) rotateX(-13deg) translateY(-46px) scale(0.97);
+  transform-origin: 50% -20%;
+}
+.education.reveal.active {
+  transform: perspective(1100px) rotateX(0deg) translateY(0) scale(1);
+}
+/* Experience — timeline arrives along its own axis: slides up from the left
+   with a slight turn, like the rail itself scrolling in, opposite in feel to
+   Education's top drop and Skills' straight rise. */
+.experience.reveal {
+  transform: perspective(1200px) rotateY(-8deg) translateX(-64px) scale(0.96);
+  transform-origin: 0% 50%;
+}
+.experience.reveal.active {
+  transform: perspective(1200px) rotateY(0deg) translateX(0) scale(1);
+}
+/* Contact — the closing panel tilts up toward you from below like a gate
+   easing open; combined with the base blur/fade it lands last and settles
+   the page. */
+.contact.reveal {
+  transform: perspective(950px) rotateX(15deg) translateY(70px) scale(0.96);
+  transform-origin: 50% 130%;
+}
+.contact.reveal.active {
+  transform: perspective(950px) rotateX(0deg) translateY(0) scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .education.reveal,
+  .experience.reveal,
+  .contact.reveal,
+  .education.reveal.active,
+  .experience.reveal.active,
+  .contact.reveal.active {
+    transform: none !important;
+  }
 }
 
 /* Glassmorphism Tilt Card Base - Monochrome */
