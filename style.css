@@ -889,26 +889,30 @@ html.intro-done .cinematic-intro {
   color: var(--text-secondary);
   margin-bottom: 24px;
 }
-/* About Resume Button - Match reference purple color */
+/* About Resume Button — matches about.png: flat #A855F7 pill, bold near-black
+   label, generous horizontal padding, no outline (the reference button has no
+   border of its own, just the fill). Size is scaled from the 1917px-wide
+   reference (186 x 59) down to this layout's text scale. */
 .about-text .btn-box {
   display: inline-block;
-  padding: 14px 36px;
-  background: #8A2BE2;
-  border-radius: 50px;
+  margin-top: 44px;
+  padding: 13px 32px;
+  background: var(--accent-purple);
+  border-radius: 999px;
   font-size: 16px;
-  color: #fff;
-  font-weight: 600;
+  color: #111111;
+  font-weight: 700;
   text-decoration: none;
   transition: all 0.3s ease;
-  border: 2px solid #8A2BE2;
-  box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+  border: none;
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.32);
   position: relative;
   z-index: 2;
 }
 .about-text .btn-box:hover {
-  background: #7B2ABD;
-  border-color: #7B2ABD;
-  box-shadow: 0 6px 20px rgba(138, 43, 226, 0.6);
+  background: #9333EA;
+  color: #FFFFFF;
+  box-shadow: 0 10px 28px rgba(168, 85, 247, 0.5);
   transform: translateY(-2px);
 }
 .about-text .btn-box:active {
