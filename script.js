@@ -551,16 +551,15 @@
       fill: 'forwards',
     });
 
-    // The image itself rounds into the circle only as it arrives, matching the
-    // existing .profile-pic exactly. It stays a full, uncropped photo while large.
+    // The image stays rectangular (no border-radius) since the hero now uses
+    // a landscape composition instead of a circular frame.
     let shapeAnim = null;
     if (portraitImg) {
       portraitImg.style.borderRadius = '0%';
       shapeAnim = portraitImg.animate(
         [
           { borderRadius: '0%', offset: 0 },
-          { borderRadius: '0%', offset: 0.55 },
-          { borderRadius: '50%', offset: 1 },
+          { borderRadius: '0%', offset: 1 },
         ],
         { duration, easing, fill: 'forwards' }
       );

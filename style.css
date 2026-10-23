@@ -394,7 +394,7 @@ html.intro-done .cinematic-intro {
    Title styling/typography/timing untouched — this only shifts its position. */
 .cinematic-intro.stage-portrait .intro-letters {
   transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-  transform: translateY(-32vh);
+  transform: translateY(-40vh);
 }
 
 /* The PORTFOLIO title clears first, and only then does the backdrop hand the
@@ -421,7 +421,7 @@ html.intro-done .cinematic-intro {
 
 @media (max-width: 768px) {
   .cinematic-intro.stage-portrait .intro-letters {
-    transform: translateY(-28vh);
+    transform: translateY(-35vh);
   }
 }
 
@@ -674,9 +674,9 @@ html.intro-done .cinematic-intro {
 .home-photo {
   position: relative;
   width: 45%;
-  max-width: 550px;
+  max-width: 600px;
   height: auto;
-  aspect-ratio: 3/4;
+  aspect-ratio: 16/9;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -684,34 +684,23 @@ html.intro-done .cinematic-intro {
   border: none;
   box-shadow: none;
   backdrop-filter: none;
-  border-radius: 0;
+  border-radius: 12px;
+  overflow: hidden;
 }
 .profile-pic {
   width: 100%;
   height: 100%;
-  border-radius: 0;
+  border-radius: 12px;
   object-fit: cover;
   object-position: center top;
   border: none;
   box-shadow: none;
-  filter: grayscale(100%) contrast(1.05);
+  filter: none;
 }
-/* Subtle radial light behind portrait */
-.home-photo::before {
-  content: '';
-  position: absolute;
-  inset: -40px;
-  background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(168, 85, 247, 0.08) 0%, transparent 70%);
-  z-index: -1;
-  pointer-events: none;
-}
-/* While the cinematic intro portrait is still flying toward the circle, only the
-   photo inside is blanked (the bitmap is parked outside its own box). The ring
-   and its glow live on this same element, so the frame stays fully visible and
-   the frame reads as empty until the animated portrait lands on it. */
+/* While the cinematic intro portrait is still flying toward the destination,
+   blank the main hero photo so it doesn't show before the animated portrait lands. */
 .home-photo.is-awaiting .profile-pic {
-  object-fit: none;
-  object-position: -10000px -10000px;
+  opacity: 0;
 }
 
 /* About Section - Editorial Layout */
@@ -736,7 +725,7 @@ html.intro-done .cinematic-intro {
   border-radius: 12px;
   object-fit: cover;
   border: 1px solid var(--border-color);
-  filter: grayscale(100%) contrast(1.05);
+  filter: none;
 }
 .about-text h2 {
   font-size: 42px;
@@ -1026,11 +1015,11 @@ html.intro-done .cinematic-intro {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
-  filter: grayscale(100%) contrast(1.05);
+  filter: none;
 }
 .project-img-wrapper:hover .project-img {
   transform: scale(1.03);
-  filter: grayscale(0%) contrast(1.05);
+  filter: none;
 }
 .project-overlay {
   position: absolute;
