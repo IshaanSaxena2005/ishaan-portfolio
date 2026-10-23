@@ -2442,6 +2442,17 @@ html.intro-done .cinematic-intro {
     height: auto;
     min-height: 340px;
   }
+  /* The project grid has no breakpoint of its own, so it held `1fr 1fr`
+     all the way down to 390px and squeezed every card into two ~170px
+     columns. It now stacks like the cert grid. The shared 450px min-height
+     is released too: in a single ~344px column it forced a tall empty band
+     under the thumbnail, so each frame now takes its own image's height. */
+  .projects-container {
+    grid-template-columns: 1fr;
+  }
+  .project-img-wrapper {
+    min-height: 0;
+  }
 }
 
 /* ---------------------------------------------------------------------
