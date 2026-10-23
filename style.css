@@ -1247,22 +1247,37 @@ html.intro-done .cinematic-intro {
    instead of the column height, and `cover` then fills it exactly.
    min-height must be released (the shared rule sets 450px) and the height
    must be `auto`: with height:100% the ratio is ignored, the frame keeps the
+/* Per-asset image fitting — not every source has the same shape.
+   devproof.png is 1672x941 (16:9). Left to the default `contain` inside a
+   frame that stretched to the text column's height, it letterboxed to the
+   top and left a ~225px dead band below. `contain` alone would fit the width
+   but still leave a band, so this one frame is sized by its own ratio
+   instead of the column height, and `cover` then fills it exactly.
+   min-height must be released (the shared rule sets 450px) and the height
+   must be `auto`: with height:100% the ratio is ignored, the frame keeps the
    548px column height and computes to ~975px wide inside a 572px cell, which
    overflowed and clipped the "Top Repositories" panel. Measured crop at rest
    is now 0.05%.
-   Fill fit (SpendWise-style): the bitmap is a monitor mockup whose dashboard
-   occupies only ~85% of the bitmap height — at plain `cover` the frame's
-   top/bottom show dead backdrop, and the dashboard never reaches the upper
-   and lower frame edges. An enlarged 118% box, centered and clipped by the
-   wrapper's overflow:hidden, trims exactly that dead band so the dashboard
-   spans the frame top to bottom. The enlarged box (not `transform: scale`)
-   keeps the fill safe from the reduced-motion transform override. */
-.frame-devproof {
-  aspect-ratio: 16 / 9;
-  width: 100%;
-  height: auto;
-  min-height: 0;
-}
+   SPENDWISE-MATCHED GEOMETRY (root cause of the "empty space" reports): the
+   visible empty strips above/below the dashboard were the CARD's surface
+   around a short 16:9 frame floating mid-row. SpendWise looks filled because
+   its wrapper stretches to the full grid row. So the frame now drops its own
+   ratio on wide screens and stretches identically (`height:100%`,
+   `min-height:450px` from the shared rule). The bitmap is then enlarged 118%
+   as a centered absolute child, `cover`-filled: with the taller frame the
+   visible height fraction (494/583 = 84.7%) lands exactly on the dashboard's
+   own bitmap span, so it reaches the frame's top and bottom edges, while the
+   wrapper's overflow:hidden trims the monitor's backdrop on the sides.
+   Absolute positioning is safe against collapse on desktop (the frame always
+   has a resolved height from the row), while narrow screens re-apply the
+   ratio below. `transform: scale` is still avoided so the reduced-motion
+   override can't undo the fill. */
+
+/* On stacked/narrow screens the frame must keep the 16:9 ratio: a stretched
+   full-height frame in a single text-below column would cover-crop ~2/3 of
+   the dashboard's width (the shared `height:100%` resolves against the
+   text-driven row). Re-own the ratio here, and the 118% enlargement above
+   continues to trim the bitmap's baked-in backdrop band. */
 .frame-devproof .project-img {
   position: absolute;
   left: -9%;
@@ -1271,6 +1286,13 @@ html.intro-done .cinematic-intro {
   height: 118%;
   object-fit: cover;
   object-position: center;
+}
+@media (max-width: 1024px) {
+  .frame-devproof {
+    aspect-ratio: 16 / 9;
+    height: auto;
+    min-height: 0;
+  }
 }
 /* DevProof card boundary: DevProof's text column is the tallest of the three
    (3-line title, long description, 10 pills), and the shared card sets
@@ -1282,6 +1304,14 @@ html.intro-done .cinematic-intro {
 .project-showcase-card:has(> .frame-devproof) {
   padding: 34px 44px;
   gap: 36px;
+}
+/* Phone layout: 44px card padding would eat a third of a ~344px column and
+   shrink the frame to an unusable ~255px strip — halve the inset here. */
+@media (max-width: 768px) {
+  .project-showcase-card:has(> .frame-devproof) {
+    padding: 20px;
+    gap: 24px;
+  }
 }
 /* gig.png is a 1024x1024 export whose dashboard only occupies the central
    942x766 (~1.23:1) - the rest is empty padding baked into the bitmap. The
