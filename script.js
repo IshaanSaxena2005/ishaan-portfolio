@@ -748,8 +748,13 @@
           return;
         }
         const t = now - t0;
+        // The display is cleared EVERY frame — blocks move each frame, so a
+        // skipped clear would paint each block on top of its previous
+        // positions and smear the late phase into streaks.
+        dctx.clearRect(0, 0, vw, vh);
         // Erase every tile whose block has broken (before the blit), so the
-        // composition hollows out exactly where its pixels left.
+        // composition hollows out exactly where its pixels left. The erosion
+        // blit runs only while intact tiles remain.
         if (erasedCount < fragments.length) {
           for (const f of fragments) {
             if (f.erased) continue;
@@ -760,7 +765,6 @@
               erasedCount++;
             }
           }
-          dctx.clearRect(0, 0, vw, vh);
           dctx.drawImage(erode, 0, 0); // the eroding composition…
         }
         // …then the broken blocks on top: every block stays a same-size
