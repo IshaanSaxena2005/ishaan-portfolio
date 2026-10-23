@@ -578,7 +578,7 @@ html.intro-done .cinematic-intro {
 
 /* Section backgrounds for monochrome design */
 .home {
-  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  background: var(--bg-primary);
   min-height: 100vh;
 }
 .about, .skills-section, .projects, .experience, .certifications, .education, .contact {
@@ -591,138 +591,189 @@ html.intro-done .cinematic-intro {
   text-shadow: none;
 }
 
-/* Home Section - Reference-Style Hero Layout */
+/* =====================================================================
+   HOME HERO SECTION — Match reference.png exactly
+   - Cinematic monochrome hero with deep near-black background
+   - Large bold single-line name on left
+   - Clean, readable summary and pill CTA buttons
+   - Very large portrait occupying right ~55%, face centered in right half,
+     fully visible without cropping, seamlessly blended into background
+   ===================================================================== */
 .home {
   display: flex;
   justify-content: space-between;
   align-items: center;
   min-height: 100vh;
-  padding: 140px 8% 80px;
+  padding: 80px 0 0 clamp(40px, 6.5vw, 110px);
   position: relative;
-  background: var(--bg-primary);
-  overflow-x: hidden;
+  background: #080808 !important;
+  overflow: hidden;
 }
+
 .home-content {
-  max-width: 550px;
-  flex: 0 0 47%;
-  padding-right: 60px;
+  flex: 0 0 46%;
+  max-width: 580px;
+  width: 100%;
+  padding-right: 20px;
+  padding-bottom: 30px;
   z-index: 2;
+  position: relative;
 }
+
 .home-content h3 {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   color: var(--text-secondary);
-  letter-spacing: 3px;
+  letter-spacing: 3.5px;
   text-transform: uppercase;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   opacity: 0;
   animation: slideBottom 1s ease forwards 0.7s;
 }
-.home-content h3:nth-of-type(2) {
-  margin-bottom: 25px;
-  animation: slideTop 1s ease forwards 0.7s;
-  font-size: 20px;
-  color: var(--text-primary);
-  text-transform: none;
-  letter-spacing: 0;
-  font-weight: 400;
-}
-.home-content h3 span {
-  color: var(--accent-purple);
-  font-size: 20px;
-  font-weight: 500;
-}
+
 .home-content h1 {
-  font-size: 68px;
+  font-size: clamp(48px, 4.7vw, 76px);
   font-weight: 700;
-  margin: 0 0 25px 0;
+  margin: 0 0 20px 0;
   line-height: 1.05;
   letter-spacing: -2px;
-  color: var(--text-primary);
+  color: #FFFFFF;
   white-space: nowrap;
   opacity: 0;
   animation: slideRight 1s ease forwards 1s;
 }
+
+.home-content h3:nth-of-type(2) {
+  margin-bottom: 24px;
+  animation: slideTop 1s ease forwards 0.7s;
+  font-size: 22px;
+  color: #F5F5F5;
+  text-transform: none;
+  letter-spacing: -0.3px;
+  font-weight: 400;
+}
+
+.home-content h3:nth-of-type(2) span {
+  color: var(--accent-purple);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.typed-cursor {
+  color: var(--accent-purple);
+  font-weight: 300;
+  font-size: 22px;
+}
+
 .home-content p {
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 15px;
+  line-height: 1.76;
   color: var(--text-secondary);
-  margin-bottom: 35px;
+  margin-bottom: 34px;
   opacity: 0;
   animation: slideLeft 1s ease forwards 1s;
-  max-width: 520px;
+  max-width: 530px;
 }
+
 .home-buttons {
   display: flex;
-  gap: 20px;
-  margin-bottom: 35px;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 34px;
   opacity: 0;
   animation: slideLeft 1s ease forwards 1.2s;
 }
+
 .btn-primary {
-  padding: 14px 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 32px;
   background: var(--accent-purple);
-  color: #fff;
-  border-radius: 8px;
-  font-size: 16px;
+  color: #FFFFFF;
+  border-radius: 9999px;
+  font-size: 15px;
   font-weight: 600;
   text-decoration: none;
-  transition: 0.3s ease;
+  transition: all 0.3s ease;
   border: 1px solid var(--accent-purple);
+  box-shadow: 0 4px 18px rgba(168, 85, 247, 0.32);
 }
+
 .btn-primary:hover {
-  background: transparent;
-  color: var(--accent-purple);
+  background: #9333ea;
+  border-color: #9333ea;
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(168, 85, 247, 0.45);
 }
+
 .btn-secondary {
-  padding: 14px 32px;
+  display: inline-flex;
+  align-items: center;
+  padding: 13px 32px;
   background: transparent;
-  color: var(--text-primary);
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  color: #FFFFFF;
+  border-radius: 9999px;
+  font-size: 15px;
+  font-weight: 500;
   text-decoration: none;
-  transition: 0.3s ease;
-  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.22);
 }
+
 .btn-secondary:hover {
-  background: var(--bg-elevated);
-  border-color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-2px);
 }
+
+.home-sci {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+
 .home-sci a {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  width: 45px;
-  height: 45px;
-  background: transparent;
-  border: 1px solid var(--border-color);
+  width: 52px;
+  height: 52px;
+  background: rgba(18, 18, 18, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 50%;
-  font-size: 20px;
-  color: var(--text-secondary);
+  font-size: 22px;
+  color: #FFFFFF;
   text-decoration: none;
-  transition: 0.3s ease;
+  transition: all 0.3s ease;
   opacity: 0;
   animation: slideLeft 1s ease forwards;
   animation-delay: calc(0.1s * var(--i));
-  margin: 0 12px 0 0;
+  margin: 0;
 }
+
 .home-sci a:hover {
   background: var(--accent-purple);
-  color: #fff;
+  color: #FFFFFF;
   border-color: var(--accent-purple);
   transform: translateY(-3px);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
 }
-/* Cinematic Portrait - reference.png - Reference Style */
+
+/* Integrated Monochrome Portrait - Matches reference.png */
 .home-photo {
-  position: relative;
-  flex: 0 0 53%;
-  max-width: 700px;
-  height: auto;
-  aspect-ratio: 3/4;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  top: 70px;
+  width: 58vw;
+  max-width: 1050px;
+  height: calc(100vh - 70px);
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-end;
+  align-items: flex-end;
   background: transparent;
   border: none;
   box-shadow: none;
@@ -730,27 +781,30 @@ html.intro-done .cinematic-intro {
   border-radius: 0;
   overflow: hidden;
   z-index: 1;
+  pointer-events: none;
 }
+
 .profile-pic {
   width: 100%;
   height: 100%;
-  border-radius: 0;
+  border-radius: 0 !important;
   object-fit: cover;
-  object-position: center 20%;
-  border: none;
-  box-shadow: none;
-  filter: grayscale(100%) contrast(1.1);
+  object-position: right bottom;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  filter: grayscale(100%) contrast(1.08) brightness(0.96);
   opacity: 1;
-  /* Gradient mask to blend into background on left edge */
-  -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 5%, rgba(0,0,0,0.7) 10%, rgba(0,0,0,1) 20%, rgba(0,0,0,1) 100%);
-  mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 5%, rgba(0,0,0,0.7) 10%, rgba(0,0,0,1) 20%, rgba(0,0,0,1) 100%);
+  /* Seamless left-edge blend into near-black background */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.08) 6%, rgba(0, 0, 0, 0.4) 16%, rgba(0, 0, 0, 0.85) 28%, #000 40%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.08) 6%, rgba(0, 0, 0, 0.4) 16%, rgba(0, 0, 0, 0.85) 28%, #000 40%, #000 100%);
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
 }
-/* While the cinematic intro portrait is still flying toward the destination,
-   blank the main hero photo so it doesn't show before the animated portrait lands. */
+
+/* While intro portrait is travelling, blank the main photo until landing */
 .home-photo.is-awaiting .profile-pic {
   opacity: 0;
 }
@@ -768,6 +822,7 @@ html.intro-done .cinematic-intro {
   justify-content: center;
   border-radius: 12px;
   padding: 0;
+  overflow: hidden;
 }
 .About-photo {
   width: 100%;
@@ -796,19 +851,23 @@ html.intro-done .cinematic-intro {
 }
 .btn-box {
   display: inline-block;
-  padding: 14px 32px;
+  padding: 14px 36px;
   background: var(--accent-purple);
-  border-radius: 8px;
+  border-radius: 9999px;
   font-size: 16px;
   color: #fff;
   font-weight: 600;
   text-decoration: none;
-  transition: 0.3s ease;
+  transition: all 0.3s ease;
   border: 1px solid var(--accent-purple);
+  box-shadow: 0 4px 18px rgba(168, 85, 247, 0.32);
 }
 .btn-box:hover {
-  background: transparent;
-  color: var(--accent-purple);
+  background: #9333ea;
+  border-color: #9333ea;
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(168, 85, 247, 0.45);
 }
 
 /* Premium Skills Section - Monochrome */
@@ -1059,15 +1118,17 @@ html.intro-done .cinematic-intro {
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   height: 100%;
-  min-height: 320px;
+  min-height: 380px;
   border: 1px solid var(--border-color);
 }
 .project-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center top;
   transition: transform 0.5s ease;
   filter: none;
+  background: #151515;
 }
 .project-img-wrapper:hover .project-img {
   transform: scale(1.03);
@@ -1535,20 +1596,25 @@ html.intro-done .cinematic-intro {
     height: 160px;
   }
   .home {
-    padding: 100px 6% 60px;
+    padding: 80px 0 0 clamp(30px, 5vw, 60px);
   }
   .home-content {
-    max-width: 450px;
-    flex: 0 0 50%;
-    padding-right: 40px;
+    max-width: 460px;
+    flex: 0 0 48%;
+    padding-right: 20px;
   }
   .home-content h1 {
-    font-size: 52px;
+    font-size: clamp(38px, 4.2vw, 54px);
     white-space: normal;
   }
   .home-photo {
-    flex: 0 0 50%;
-    max-width: 500px;
+    flex: 0 0 52%;
+    width: 52%;
+    height: calc(100vh - 70px);
+    min-height: 520px;
+  }
+  .profile-pic {
+    object-position: 88% bottom;
   }
 }
 @media (max-width: 768px) {
@@ -1565,41 +1631,52 @@ html.intro-done .cinematic-intro {
   .home {
     flex-direction: column-reverse;
     text-align: center;
-    padding: 100px 6% 60px;
+    padding: 80px 6% 50px;
+    min-height: auto;
+    justify-content: flex-start;
   }
   .home-content {
     padding-right: 0;
+    padding-bottom: 0;
     max-width: 100%;
+    flex: 0 0 100%;
   }
   .home-content h1 {
-    font-size: 52px;
-    margin-bottom: 20px;
+    font-size: clamp(34px, 8vw, 48px);
+    margin-bottom: 16px;
     white-space: normal;
   }
   .home-content h3 {
     font-size: 13px;
+    margin-bottom: 14px;
   }
   .home-content h3:nth-of-type(2) {
     font-size: 18px;
+    margin-bottom: 20px;
   }
   .home-content p {
-    font-size: 15px;
-    margin-bottom: 30px;
+    font-size: 14.5px;
+    line-height: 1.7;
+    margin-bottom: 28px;
+    max-width: 100%;
   }
-  .home-buttons {
+  .home-sci {
     justify-content: center;
-    flex-direction: column;
-    gap: 15px;
   }
   .home-photo {
+    flex: 0 0 auto;
     width: 100%;
-    max-width: 400px;
-    margin-bottom: 40px;
-    aspect-ratio: 3/4;
+    max-width: 360px;
+    height: 360px;
+    min-height: auto;
+    margin-bottom: 24px;
+    justify-content: center;
+    align-items: center;
   }
-  .btn-primary, .btn-secondary {
-    width: 100%;
-    text-align: center;
+  .profile-pic {
+    object-position: 78% 25%;
+    -webkit-mask-image: radial-gradient(ellipse 65% 65% at 55% 45%, #000 45%, transparent 80%);
+    mask-image: radial-gradient(ellipse 65% 65% at 55% 45%, #000 45%, transparent 80%);
   }
   .about {
     grid-template-columns: 1fr;
@@ -2139,7 +2216,6 @@ html.intro-done .cinematic-intro {
     rgba(0, 0, 0, 0.72) 100%
   );
 }
-.home,
 .about,
 .skills-section,
 .projects,
@@ -2150,7 +2226,6 @@ html.intro-done .cinematic-intro {
   position: relative;
   isolation: isolate;
 }
-.home::before,
 .about::before,
 .skills-section::before,
 .projects::before,
@@ -2168,15 +2243,6 @@ html.intro-done .cinematic-intro {
     radial-gradient(ellipse 44% 36% at 90% 100%, rgba(124, 58, 237, 0.08) 0%, rgba(124, 58, 237, 0) 72%);
 }
 
-/* Profile ring — accent the existing glow with a layered rim light.
-   The container itself stays fully transparent (transparent PNG). */
-.profile-pic {
-  box-shadow:
-    0 0 0 1px rgba(192, 132, 252, 0.25),
-    0 0 30px rgba(168, 85, 247, 0.42),
-    0 0 62px rgba(236, 72, 153, 0.18),
-    0 26px 50px -22px rgba(0, 0, 0, 0.85);
-}
 .About-photo {
   box-shadow:
     0 0 0 1px rgba(192, 132, 252, 0.22),
