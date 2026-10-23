@@ -1132,17 +1132,16 @@ html.intro-done .cinematic-intro {
   backdrop-filter: none;
   box-shadow: none;
 }
-/* Project Cards - 3D Forward Zoom Effect */
+/* Project Cards - Image-only hover animation */
 .project-img-wrapper {
   position: relative;
   border-radius: 12px;
-  overflow: visible;
+  overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   height: 100%;
   min-height: 450px;
   border: 1px solid var(--border-color);
   transition: transform 0.4s ease, box-shadow 0.4s ease;
-  perspective: 1000px;
 }
 .project-img {
   width: 100%;
@@ -1154,21 +1153,20 @@ html.intro-done .cinematic-intro {
   background: #151515;
   border-radius: 12px;
 }
-/* Image hover - 3D forward zoom */
+/* Image hover - only image animates */
 .project-img-wrapper:hover {
-  transform: perspective(1000px) translateZ(30px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-  z-index: 10;
+  transform: scale(1.05);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 .project-img-wrapper:hover .project-img {
-  transform: scale(1.08);
+  transform: scale(1.1);
 }
-/* Text hover - subtle lift only */
+/* Text area - no animation on text hover */
 .project-info {
-  transition: transform 0.3s ease;
+  transition: none;
 }
 .project-info:hover {
-  transform: translateY(-8px);
+  transform: none;
 }
 .project-overlay {
   position: absolute;
