@@ -468,7 +468,7 @@ html.intro-done .cinematic-intro {
    - pointer-events: none so it can never intercept clicks, hover or scroll
    - the hero paints its own opaque background on top, so the video is
      invisible while the hero is on screen
-   - reduced motion / failed playback falls back to a static dark gradient
+   - reduced motion / failed playback falls back to a static deep-blue gradient
    ====================================================================== */
 .site-video-bg {
   position: fixed;
@@ -476,33 +476,48 @@ html.intro-done .cinematic-intro {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  /* Static dark fallback: what you see if the video never paints
+  /* Static deep-blue fallback: what you see if the video never paints
      (autoplay blocked, decode failure, or prefers-reduced-motion). */
   background:
-    radial-gradient(ellipse 90% 70% at 50% 25%, #17111f 0%, #0c0b10 55%, #080808 100%);
+    radial-gradient(ellipse 90% 70% at 50% 25%, #143a78 0%, #0a1d47 55%, #050b1e 100%);
 }
 .site-video-bg__video {
   position: absolute;
   inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Low-contrast, unobtrusive texture — not a moving subject. */
-  filter: saturate(0.55) brightness(0.44) contrast(0.85);
-  opacity: 0.9;
+  /* The footage is a very dark blue light-study, so it needs a real lift
+     before the veil goes on — otherwise it reads as flat black. */
+  filter: saturate(1.45) brightness(1.55) contrast(1.02);
+  opacity: 1;
 }
-/* Single dark veil over the whole video plane so white text, purple
-   accents, cards, buttons and dashboard images stay readable. The veil
-   carries most of the darkening so the per-section scrims can stay light
-   enough for the footage to still register. */
+/* Screen-blended blue wash: lifts the footage's near-black areas into a
+   rich deep-blue tone without dulling the moving highlights underneath. */
+.site-video-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 85% 72% at 50% 34%, rgba(37, 99, 235, 0.34) 0%, rgba(14, 45, 125, 0.20) 58%, rgba(5, 18, 52, 0.10) 100%),
+    linear-gradient(180deg, rgba(14, 44, 120, 0.18) 0%, rgba(5, 16, 46, 0.10) 100%);
+  mix-blend-mode: screen;
+}
+/* Blue-tinted veil over the video plane: enough depth for white text and
+   purple accents to stay readable, light enough that the moving blue
+   light still reads clearly behind every section after the hero. */
 .site-video-bg::after {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(8, 8, 8, 0.74) 0%, rgba(8, 8, 8, 0.62) 45%, rgba(8, 8, 8, 0.78) 100%),
-    radial-gradient(ellipse 88% 70% at 50% 40%, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.6) 100%);
+    linear-gradient(180deg, rgba(4, 12, 34, 0.32) 0%, rgba(6, 20, 54, 0.18) 45%, rgba(3, 9, 28, 0.42) 100%),
+    radial-gradient(ellipse 90% 74% at 50% 40%, rgba(24, 72, 190, 0.12) 0%, rgba(3, 9, 28, 0.38) 100%);
 }
 @media (prefers-reduced-motion: reduce) {
   /* Motion is not allowed: keep the static dark fallback only. */
@@ -621,12 +636,12 @@ html.intro-done .cinematic-intro {
   min-height: 100vh;
 }
 .about, .skills-section, .projects, .experience, .certifications, .education, .contact {
-  /* ~0.55 black over the veiled video: white text and purple accents keep
-     full contrast while the motion still registers behind the content. */
-  background: rgba(8, 8, 8, 0.55);
+  /* Deep-blue scrim over the veiled video: white text and purple accents
+     keep their contrast while the motion clearly registers behind content. */
+  background: rgba(5, 14, 38, 0.34);
 }
 .about:nth-of-type(even), .skills-section, .experience, .education {
-  background: rgba(12, 12, 15, 0.58);
+  background: rgba(6, 19, 49, 0.40);
 }
 .home-content h1, .home-content h3, .about-text h2 {
   text-shadow: none;
@@ -2151,13 +2166,22 @@ html.intro-done .cinematic-intro {
 }
 
 /* Nothing about the card itself ever moves: no rotation, no lift, no whole-
-   card transform, and nothing is written to .project-info on hover (the old
-   per-card transform engine in script.js already skips project cards). */
+   card transform (the old per-card transform engine in script.js already
+   skips project cards). The copy owns the gesture in 5c below. */
 .project-showcase-card,
-.project-showcase-card:hover,
-.project-showcase-card:hover .project-info {
+.project-showcase-card:hover {
   transform: none;
   transition: none;
+}
+
+/* The project copy must paint above the shared card surface: the generic
+   .tilt-card::before sits at z-index 0 and, with no stacking level here, it
+   covered the titles, descriptions, feature lists and pills completely. */
+.project-info {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.75);
+  transition: transform 0.45s var(--surface-ease);
 }
 
 /* ---------------------------------------------------------------------
@@ -2195,6 +2219,24 @@ html.intro-done .cinematic-intro {
 @media (prefers-reduced-motion: reduce) {
   .project-img-wrapper,
   .project-img-wrapper:hover {
+    transform: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   5c. PROJECT COPY HOVER — forward lift, copy only
+   Hovering the text column lifts the copy toward the reader on its own
+   plane. It stays fully visible the whole time, and the image gesture in
+   5b remains bound to the image frame only.
+   --------------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  .project-info:hover {
+    transform: perspective(1200px) translate3d(0, -8px, 24px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .project-info,
+  .project-info:hover {
     transform: none !important;
   }
 }
