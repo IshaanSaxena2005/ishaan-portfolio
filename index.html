@@ -75,10 +75,27 @@
       </div>
     </div>
 
-    <!-- Video Background - Disabled for monochrome redesign -->
-    <!-- <div class="video-background">
-      <video autoplay loop muted playsinline src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_064122_c4750c0e-7476-4b44-94a2-a85a65c63bf2.mp4"></video>
-    </div> -->
+    <!-- Reusable cinematic background video — one fixed layer for every
+         section AFTER the hero (About, Skills, Projects, Experience,
+         Certifications, Education, Contact). A single element instead of one
+         per section: it is fixed behind .content-wrapper, and the hero keeps
+         its own opaque background painted on top of it, so the video is only
+         ever visible once the hero scrolls away. pointer-events: none keeps
+         it out of every click, hover and scroll. The source is the video
+         asset this project already shipped with (also present in the
+         Portfolio Backup copy) — no new external asset was introduced. -->
+    <div class="site-video-bg" aria-hidden="true">
+      <video
+        class="site-video-bg__video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        disablepictureinpicture
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_064122_c4750c0e-7476-4b44-94a2-a85a65c63bf2.mp4"
+      ></video>
+    </div>
 
     <div class="content-wrapper">
     <!-- <div class="cursor-glow"></div> -->

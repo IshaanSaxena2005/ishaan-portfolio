@@ -461,18 +461,41 @@ html.intro-done .cinematic-intro {
   }
 }
 
-/* Video Background - Hidden for monochrome redesign */
-.video-background {
+/* ======================================================================
+   CINEMATIC BACKGROUND VIDEO — one reusable layer for every section
+   AFTER the hero.
+   - fixed, behind .content-wrapper (z-index 0 vs 1)
+   - pointer-events: none so it can never intercept clicks, hover or scroll
+   - the hero paints its own opaque background on top, so the video is
+     invisible while the hero is on screen
+   - reduced motion / failed playback falls back to a static dark gradient
+   ====================================================================== */
+.site-video-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
+  overflow: hidden;
   pointer-events: none;
-  display: none;
+  /* Static dark fallback: what you see if the video never paints
+     (autoplay blocked, decode failure, or prefers-reduced-motion). */
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 25%, #17111f 0%, #0c0b10 55%, #080808 100%);
 }
-.video-background video {
+.site-video-bg__video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Low-contrast, unobtrusive texture — not a moving subject. */
+  filter: saturate(0.65) brightness(0.42) contrast(0.88);
+  opacity: 0.6;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Motion is not allowed: keep the static dark fallback only. */
+  .site-video-bg__video {
+    display: none;
+  }
 }
 
 /* Content wrapper - sits above video */
