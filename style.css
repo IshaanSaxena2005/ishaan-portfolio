@@ -1223,6 +1223,17 @@ html.intro-done .cinematic-intro {
   background: #151515;
   border-radius: 12px;
 }
+/* Per-asset image fitting — not every source has the same shape.
+   devproof.png is 1672x941 (16:9), but its frame stretches to the height
+   of the text column beside it. Left to the default `contain`, that letterboxes
+   the dashboard into the top third and leaves a ~225px dead band below it.
+   `cover` fills the frame instead and, at this near-square crop, only trims
+   the photo's empty desk at the extreme left/right edges - the dashboard UI
+   itself stays whole and legible. */
+.frame-devproof .project-img {
+  object-fit: cover;
+  object-position: center;
+}
 /* Image hover - only image animates */
 .project-img-wrapper:hover {
   transform: scale(1.05);
