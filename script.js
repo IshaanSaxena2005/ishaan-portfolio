@@ -1,6 +1,7 @@
 /* ========================================
    CINEMATIC INTRO
-   ISHAAN → PORTFOLIO → portrait reveal → portrait travels into the home circle
+   ISHAAN → PORTFOLIO → portrait reveal → the whole composition dissolves
+   into particles as the hero appears (no travel/landing into the hero photo)
    Plays on every full page reload; respects prefers-reduced-motion
    ======================================== */
 (function initCinematicIntro() {
@@ -23,6 +24,7 @@
   const timers = [];
   let particleRaf = null;
   let morphRaf = null;
+  let dissolveRaf = null;
   let ambientParticles = [];
   let trailParticles = [];
   let particleCtx = null;
@@ -210,6 +212,10 @@
     finished = true;
     stopParticles();
     stopMorph();
+    if (dissolveRaf) {
+      cancelAnimationFrame(dissolveRaf);
+      dissolveRaf = null;
+    }
     cleanupListeners();
     document.documentElement.classList.remove('intro-pending');
     document.documentElement.classList.add('intro-done');
@@ -468,7 +474,7 @@
 
     await rise.finished.catch(() => {});
     // Bake the final state into inline styles and cancel both animations so
-    // nothing lingers to conflict with the subsequent travel phase.
+    // nothing lingers to conflict with the particle dissolution phase.
     fadeIn.cancel();
     commitAnimation(rise, portraitEl, {
       opacity: '1',
@@ -495,132 +501,295 @@
   }
 
   /**
-   * STAGE 4 — the SAME portrait travels, scales down progressively and slowly,
-   * and lands exactly inside the existing circular profile image. The
-   * destination is measured at runtime (getBoundingClientRect), never hard-coded.
+   * Bake one of the portrait's CSS mask-image gradients into a canvas pass.
+   * `direction` selects which mask is replicated; both are pure alpha ramps,
+   * composited with destination-in so sequential passes multiply like the
+   * stacked CSS masks do.
    */
-  async function runPortraitTravel() {
-    const target = document.querySelector('.home .profile-pic');
-    const frame = document.querySelector('.home-photo');
-    if (!portraitEl || !target) return;
+  function applyPortraitMask(canvasCtx, w, h, direction) {
+    const grad =
+      direction === 'vertical'
+        ? canvasCtx.createLinearGradient(0, 0, 0, h)
+        : canvasCtx.createLinearGradient(0, 0, w, 0);
+    if (direction === 'vertical') {
+      // .intro-portrait-img mask — 180deg
+      grad.addColorStop(0, 'rgba(0,0,0,1)');
+      grad.addColorStop(0.8, 'rgba(0,0,0,1)');
+      grad.addColorStop(0.86, 'rgba(0,0,0,0.82)');
+      grad.addColorStop(0.91, 'rgba(0,0,0,0.56)');
+      grad.addColorStop(0.96, 'rgba(0,0,0,0.30)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+    } else {
+      // .intro-portrait wrapper mask — 90deg
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(0.06, 'rgba(0,0,0,0.4)');
+      grad.addColorStop(0.12, 'rgba(0,0,0,0.8)');
+      grad.addColorStop(0.2, 'rgba(0,0,0,1)');
+      grad.addColorStop(0.8, 'rgba(0,0,0,1)');
+      grad.addColorStop(0.88, 'rgba(0,0,0,0.8)');
+      grad.addColorStop(0.94, 'rgba(0,0,0,0.4)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+    }
+    canvasCtx.globalCompositeOperation = 'destination-in';
+    canvasCtx.fillStyle = grad;
+    canvasCtx.fillRect(0, 0, w, h);
+    canvasCtx.globalCompositeOperation = 'source-over';
+  }
 
-    // Empty the existing circular frame BEFORE the portfolio becomes visible, so
-    // the viewer never sees the portrait inside it while the animated portrait is
-    // still travelling. The ring/glow stay untouched; only the photo is blanked.
-    if (frame) frame.classList.add('is-awaiting');
+  /**
+   * STAGE 4 — PARTICLE DISSOLUTION (replaces the old travel/landing hand-off).
+   * The complete final composition — settled title + settled intro portrait —
+   * is painted into an offscreen source canvas: letters re-drawn with the
+   * same font/slots/chrome-gradient/purple glow, the portrait bitmap stamped
+   * with its two CSS masks replicated, so the replica is pixel-identical. The
+   * DOM layers are hidden in the very frame the replica first shows (no
+   * flash), then the painting erodes: each tile lifts off as a drifting
+   * fragment drawn from the pristine source canvas (every fragment carries
+   * the real composition's pixels) with subtle depth scaling and fade, while
+   * the backdrop cross-fades to transparent and the hero — with its own
+   * untouched portrait — appears beneath.
+   * IMPORTANT: no getImageData/toDataURL anywhere — the local PNG taints
+   * canvases on file:// origins and readback would throw; drawImage from a
+   * tainted canvas is allowed, so the effect is pixel-real and safe.
+   */
+  async function runIntroDissolve() {
+    if (!portraitEl) return;
 
+    // Hero at its final, un-transformed spot before the dissolution begins.
     settleDestination();
 
-    // Freeze the portrait's current on-screen box as the animation origin.
-    const start = portraitEl.getBoundingClientRect();
-    portraitEl.style.transform = 'none';
-    portraitEl.style.width = start.width + 'px';
-    portraitEl.style.height = start.height + 'px';
-    portraitEl.style.left = start.left + 'px';
-    portraitEl.style.top = start.top + 'px';
+    // Brief hold on the complete composition so the final frame is seen intact.
+    await wait(500);
 
-    // Reveal the portfolio beneath the overlay as the portrait flies in.
-    intro.classList.add('stage-travel');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-    const dest = target.getBoundingClientRect();
-    const scale = dest.width / start.width;
-    const dx = dest.left + dest.width / 2 - (start.left + start.width / 2);
-    const dy = dest.top + dest.height / 2 - (start.top + start.height / 2);
-    const duration = 1700;
-    const easing = 'cubic-bezier(0.4, 0, 0.2, 1)';
+    /** Paint the visible composition; returns the source canvas or null. */
+    const buildSnapshot = () => {
+      const snap = document.createElement('canvas');
+      snap.width = vw;
+      snap.height = vh;
+      const sctx = snap.getContext('2d');
+      if (!sctx) return null;
 
-    // Scale shrinks in even steps across the whole flight (never a sudden
-    // drop at the end), with a gentle arc and a subtle 3D lean for depth.
-    const arc = Math.min(64, Math.abs(dy) * 0.12 + 26);
-    const stops = [0, 0.32, 0.66, 1];
-    const frames = stops.map((p) => {
-      const s = 1 + (scale - 1) * p;
-      const x = dx * p;
-      const y = dy * p - Math.sin(Math.PI * p) * arc;
-      const lean = -7 * Math.sin(Math.PI * p);
-      const depth = 70 * Math.sin(Math.PI * p);
-      return {
-        offset: p,
-        transform: `perspective(1500px) translate3d(${x}px, ${y}px, ${depth}px) rotateY(${lean}deg) scale(${s})`,
-      };
-    });
+      // Title: each settled glyph, same Cinzel 700 metrics and chrome gradient
+      // as the DOM letters, plus the purple glow layers baked into the pixels.
+      sctx.save();
+      sctx.textAlign = 'center';
+      sctx.textBaseline = 'middle';
+      sctx.shadowColor = 'rgba(168, 85, 247, 0.55)';
+      sctx.shadowBlur = 22;
+      for (const el of lettersRoot.querySelectorAll('.intro-letter.is-settled-title')) {
+        const ch = el.textContent;
+        if (!ch || ch === '\u00A0') continue;
+        const r = el.getBoundingClientRect();
+        if (!r.width) continue;
+        const fs = parseFloat(el.style.fontSize) || r.height;
+        sctx.font = `700 ${fs}px Cinzel, serif`;
+        const g = sctx.createLinearGradient(0, r.top, 0, r.bottom);
+        [
+          [0, '#3a3a4a'], [0.15, '#1a1a2e'], [0.3, '#252535'], [0.5, '#1a1a2e'],
+          [0.7, '#252535'], [0.85, '#1a1a2e'], [1, '#3a3a4a'],
+        ].forEach(([o, c]) => g.addColorStop(o, c));
+        sctx.fillStyle = g;
+        sctx.fillText(ch, r.left + r.width / 2, r.top + r.height / 2);
+      }
+      sctx.restore();
 
-    const travel = portraitEl.animate(frames, {
-      duration,
-      easing,
-      fill: 'forwards',
-    });
+      // Portrait: the bitmap drawn with object-fit:contain math, masked by its
+      // two CSS ramps (masked-away pixels never become fragments), stamped
+      // with a faint purple rim glow that mirrors the drop-shadow.
+      if (portraitImg && portraitImg.naturalWidth) {
+        const rect = portraitEl.getBoundingClientRect();
+        if (rect.width > 2) {
+          const tmp = document.createElement('canvas');
+          tmp.width = Math.max(1, Math.round(rect.width));
+          tmp.height = Math.max(1, Math.round(rect.height));
+          const tctx = tmp.getContext('2d');
+          if (tctx) {
+            const nw = portraitImg.naturalWidth;
+            const nh = portraitImg.naturalHeight;
+            const scale = Math.min(tmp.width / nw, tmp.height / nh);
+            const dw = nw * scale;
+            const dh = nh * scale;
+            tctx.drawImage(portraitImg, (tmp.width - dw) / 2, (tmp.height - dh) / 2, dw, dh);
+            applyPortraitMask(tctx, tmp.width, tmp.height, 'vertical');
+            applyPortraitMask(tctx, tmp.width, tmp.height, 'horizontal');
+            sctx.save();
+            sctx.shadowColor = 'rgba(168, 85, 247, 0.30)';
+            sctx.shadowBlur = 30;
+            sctx.drawImage(tmp, rect.left, rect.top);
+            sctx.restore();
+          }
+        }
+      }
+      return snap;
+    };
 
-    // The image stays rectangular (no border-radius) since the hero now uses
-    // a rectangular portrait composition instead of a circular frame.
-    let shapeAnim = null;
-    if (portraitImg) {
-      portraitImg.style.borderRadius = '0%';
-      // No border-radius animation needed
+    let snap = null;
+    try {
+      snap = buildSnapshot();
+    } catch (err) {
+      snap = null; // any unexpected failure → the quiet-fade fallback below
+    }
+    if (!snap) {
+      intro.classList.add('stage-dissolve');
+      lettersRoot.style.transition = 'none';
+      lettersRoot.style.opacity = '0';
+      portraitEl.style.transition = 'none';
+      portraitEl.style.opacity = '0';
+      await wait(1400);
+      return;
     }
 
-    // Retract the portrait's edge-blend masks DURING the final approach, timed so
-    // they are fully retracted the instant the portrait lands. Now that the
-    // border-radius clips every straight bitmap edge, the masks only dim the
-    // circle's lower and side crescents; leaving them in place would make those
-    // crescents jump in brightness when the real photo appeared underneath
-    // (measured: ~86 luminance in a single frame). mask-image gradients cannot be
-    // interpolated, so the fades are retracted by stretching mask-size, which
-    // brings every masked pixel to full opacity. Starting it 380ms before the
-    // landing keeps that change riding the motion, instead of parking the
-    // portrait in place while it settles.
-    const retracted = new Promise((resolve) => {
-      let settled = false;
-      const done = () => {
-        if (settled) return;
-        settled = true;
-        portraitEl.removeEventListener('transitionend', onEnd);
-        resolve();
-      };
-      const onEnd = (e) => {
-        if (e.target === portraitEl && e.propertyName.indexOf('mask-size') !== -1) {
-          done();
+    /* ---- Fragment lattice over the composition's actual boxes -------------- */
+    // Tiles sit on a uniform grid across every glyph rect and the portrait box
+    // — the exact regions the composition occupies. Transparent tiles simply
+    // draw nothing, so fragments only ever originate where pixels exist.
+    const TILE = 11;
+    const boxes = [];
+    for (const el of lettersRoot.querySelectorAll('.intro-letter.is-settled-title')) {
+      const r = el.getBoundingClientRect();
+      if (r.width) boxes.push([r.left, r.top, r.width, r.height, 1]); // keep all text tiles
+    }
+    const pRect = portraitEl.getBoundingClientRect();
+    if (pRect.width > 2) boxes.push([pRect.left, pRect.top, pRect.width, pRect.height, 0.5]);
+
+    const fragments = [];
+    const cx = vw / 2;
+    const cy = vh / 2;
+    for (const [bx, by, bw, bh, keepRatio] of boxes) {
+      for (let gy = by; gy < by + bh; gy += TILE) {
+        if (gy >= vh) break;
+        for (let gx = bx; gx < bx + bw; gx += TILE) {
+          const cellX = Math.max(0, Math.min(gx, vw - TILE));
+          const cellY = Math.max(0, Math.min(gy, vh - TILE));
+          const kept = Math.random() < keepRatio;
+          const ang = Math.random() * Math.PI * 2;
+          const tx = (cellX + TILE / 2 - cx) / (vw * 0.7);
+          const ty = (cellY + TILE / 2 - cy) / (vh * 0.7);
+          const z = Math.random() * 2 - 1; // subtle depth: nearer fragments lead
+          fragments.push({
+            sx: cellX, // pristine source region (never mutated)
+            sy: cellY,
+            ox: cellX + (Math.random() - 0.5) * 5, // display-origin jitter
+            oy: cellY + (Math.random() - 0.5) * 5,
+            vx: Math.cos(ang) * 0.5 + tx * 0.9,
+            vy: Math.sin(ang) * 0.5 + ty * 0.9 - 0.2,
+            dist: (95 + Math.random() * 175) * (0.8 + (z + 1) * 0.4),
+            delay: Math.random() * 620,
+            z,
+            kept, // non-kept tiles still erode — they just fly without a fragment
+            erased: false,
+          });
+        }
+      }
+    }
+
+    /* ---- Dissolve canvases -------------------------------------------------- */
+    // DPR capped at 1.5 for the display canvas: moving fragments gain little
+    // from extra resolution while the full-canvas composites per frame are
+    // the main cost (notably in software rendering).
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    // Erosion canvas: the replica that loses tiles as their fragments lift.
+    const erode = document.createElement('canvas');
+    erode.width = vw;
+    erode.height = vh;
+    const ectx = erode.getContext('2d');
+    // Display canvas: what the viewer sees, dpr-scaled for crisp fragments.
+    const disp = document.createElement('canvas');
+    disp.className = 'intro-dissolve-canvas';
+    disp.width = Math.round(vw * dpr);
+    disp.height = Math.round(vh * dpr);
+    const dctx = disp.getContext('2d');
+    if (!ectx || !dctx) return; // nothing to dissolve with; leave intro as-is
+    dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ectx.drawImage(snap, 0, 0); // erosion copy starts identical to the source
+
+    // Replica first, DOM hidden second — one commit, so there is no blank or
+    // doubled frame. With transitions disabled the swap is instantaneous and
+    // the composition on screen stays identical.
+    dctx.drawImage(erode, 0, 0);
+    intro.appendChild(disp);
+    lettersRoot.style.transition = 'none';
+    lettersRoot.style.opacity = '0';
+    portraitEl.style.transition = 'none';
+    portraitEl.style.opacity = '0';
+
+    // Stop the ambient dust and cross-fade the backdrop to transparent, so the
+    // hero is revealed underneath as the fragments drift and dim — no flash.
+    stopParticles();
+    intro.classList.add('stage-dissolve');
+
+    /* ---- Scatter animation -------------------------------------------------- */
+    const HOLD = 340;    // intact composition holds before the first tile lifts
+    const SCATTER = 1600;
+    const MAXDELAY = 620;
+    const TOTAL = HOLD + SCATTER + MAXDELAY;
+
+    let erasedCount = 0;
+    await new Promise((resolve) => {
+      const t0 = performance.now();
+      const loop = (now) => {
+        if (finished) {
+          resolve();
+          return;
+        }
+        const t = now - t0;
+        // Erase every tile whose fragment has lifted (before the blit), so
+        // the painting hollows out exactly where its pixels departed.
+        if (erasedCount < fragments.length) {
+          for (const f of fragments) {
+            if (f.erased) continue;
+            const lead = t - HOLD - f.delay;
+            if (lead > 0) {
+              ectx.clearRect(f.sx, f.sy, TILE, TILE);
+              f.erased = true;
+              erasedCount++;
+            }
+          }
+          dctx.clearRect(0, 0, vw, vh);
+          dctx.drawImage(erode, 0, 0); // the eroding composition…
+        }
+        // …then the airborne fragments on top.
+        const ease = (k) => 1 - Math.pow(1 - k, 3); // ease-out cubic
+        for (const f of fragments) {
+          if (!f.kept) continue; // eroded silently, no airborne fragment
+          const local = t - HOLD - f.delay;
+          if (local <= 0 || !f.erased) continue;
+          const k = Math.min(1, local / SCATTER);
+          const e = ease(k);
+          const a = Math.pow(1 - k, 1.1);
+          if (a <= 0.015) continue;
+          const drift = e * f.dist;
+          const x = f.ox + f.vx * drift;
+          const y = f.oy + f.vy * drift;
+          // Subtle depth: scale breathing driven by the fragment's z value.
+          const s = Math.max(0.5, TILE * 0.92 * (1 - 0.35 * e) * (1 + f.z * 0.35 * e));
+          dctx.globalAlpha = a;
+          dctx.drawImage(snap, f.sx, f.sy, TILE, TILE,
+            x - s / 2, y - s / 2, s, s);
+        }
+        dctx.globalAlpha = 1;
+        if (t < TOTAL) {
+          dissolveRaf = requestAnimationFrame(loop);
+        } else {
+          resolve();
         }
       };
-      portraitEl.addEventListener('transitionend', onEnd);
-      trackTimeout(() => portraitEl.classList.add('landed'), Math.max(0, duration - 380));
-      trackTimeout(done, duration); // fallback if the transition never reports back
+      dissolveRaf = requestAnimationFrame(loop);
     });
 
-    await travel.finished.catch(() => {});
-
-    // Snap exactly onto the real circle so the hand-off has zero jump.
-    commitAnimation(travel, portraitEl, {
-      width: dest.width + 'px',
-      height: dest.height + 'px',
-      left: dest.left + 'px',
-      top: dest.top + 'px',
-      transform: 'none',
-    });
-    if (portraitImg) portraitImg.style.borderRadius = '50%';
-    if (shapeAnim) shapeAnim.cancel();
-
-    // The retraction began ~380ms before the landing, so it is already complete
-    // (or a frame away) here — the hand-off follows immediately, with no parked
-    // frame in between.
-    await retracted;
-
-    // HAND-OFF — the animated portrait has reached the frame's exact box, its
-    // blend masks are fully retracted and its bitmap is rounded into the same
-    // circle, so the two layers now differ only by the frame's 3px border (the
-    // real photo paints its bitmap into that inner content box) and by the
-    // traveller's drop-shadow. Reveal the real portrait and cross-fade the
-    // traveller out over 320ms, so that residual sub-pixel scale difference is
-    // absorbed by the fade instead of being stepped. The traveller is still fully
-    // opaque on the first frame of that fade, so the circle never shows empty.
-    if (frame) frame.classList.remove('is-awaiting');
-    const fade = portraitEl.animate([{ opacity: '1' }, { opacity: '0' }], {
-      duration: 320,
-      easing: 'ease-out',
-      fill: 'forwards',
-    });
-    await fade.finished.catch(() => {});
-    portraitEl.style.opacity = '0';
+    /* ---- Cleanup ------------------------------------------------------------ */
+    if (dissolveRaf) {
+      cancelAnimationFrame(dissolveRaf);
+      dissolveRaf = null;
+    }
+    disp.remove();
+    erode.width = 1;
+    erode.height = 1;
+    snap.width = 1;
+    snap.height = 1;
   }
 
   /**
@@ -824,8 +993,9 @@
     await portraitReady;
     await runPortraitReveal();
 
-    // STAGE 4 — the same portrait travels into the existing circular image
-    await runPortraitTravel();
+    // STAGE 4 — the whole final composition disintegrates into particles,
+    // revealing the hero beneath (no travel/landing into the hero's photo).
+    await runIntroDissolve();
 
     finishIntro();
   }

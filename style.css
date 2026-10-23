@@ -419,6 +419,31 @@ html.intro-done .cinematic-intro {
   transition: opacity 0.6s ease;
 }
 
+/* PARTICLE DISSOLUTION stage: the title and portrait DOM layers are hidden
+   inline (transition: none) in the very frame the dissolve-replica canvas
+   first paints, so only the backdrop and ambient layers exit via CSS here.
+   The canvas sits above every intro layer and is removed on completion. */
+.intro-dissolve-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 6;
+  pointer-events: none;
+}
+/* Backdrop cross-fades to transparent a beat after the dissolution starts,
+   revealing the black-and-white hero beneath as the fragments drift and
+   dim — no blank screen, no flash, hero portrait never touched. */
+.cinematic-intro.stage-dissolve {
+  background-color: transparent;
+  transition: background-color 1.25s ease 0.3s;
+}
+.cinematic-intro.stage-dissolve .intro-lighting,
+.cinematic-intro.stage-dissolve .intro-particles {
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
 @media (max-width: 768px) {
   .cinematic-intro.stage-portrait .intro-letters {
     transform: translateY(-35vh);
