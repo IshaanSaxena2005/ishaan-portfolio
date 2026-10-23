@@ -1224,12 +1224,22 @@ html.intro-done .cinematic-intro {
   border-radius: 12px;
 }
 /* Per-asset image fitting — not every source has the same shape.
-   devproof.png is 1672x941 (16:9), but its frame stretches to the height
-   of the text column beside it. Left to the default `contain`, that letterboxes
-   the dashboard into the top third and leaves a ~225px dead band below it.
-   `cover` fills the frame instead and, at this near-square crop, only trims
-   the photo's empty desk at the extreme left/right edges - the dashboard UI
-   itself stays whole and legible. */
+   devproof.png is 1672x941 (16:9). Left to the default `contain` inside a
+   frame that stretched to the text column's height, it letterboxed to the
+   top and left a ~225px dead band below. `contain` alone would fit the width
+   but still leave a band, so this one frame is sized by its own ratio
+   instead of the column height, and `cover` then fills it exactly.
+   min-height must be released (the shared rule sets 450px) and the height
+   must be `auto`: with height:100% the ratio is ignored, the frame keeps the
+   548px column height and computes to ~975px wide inside a 572px cell, which
+   overflowed and clipped the "Top Repositories" panel. Measured crop at rest
+   is now 0.05%. */
+.frame-devproof {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+}
 .frame-devproof .project-img {
   object-fit: cover;
   object-position: center;
@@ -1252,21 +1262,8 @@ html.intro-done .cinematic-intro {
   object-fit: cover;
   object-position: center;
 }
-/* Image hover - only image animates */
-.project-img-wrapper:hover {
-  transform: scale(1.05);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-}
-.project-img-wrapper:hover .project-img {
-  transform: scale(1.1);
-}
-/* Text area - no animation on text hover */
-.project-info {
-  transition: none;
-}
-.project-info:hover {
-  transform: none;
-}
+/* The image-only forward 3D hover lives in one place, in section 5 below,
+   so there is no second source of movement for the frame. */
 .project-overlay {
   position: absolute;
   top: 0;
@@ -1988,12 +1985,9 @@ html.intro-done .cinematic-intro {
 .cert-card > .cert-desc {
   transform: translateZ(14px);
 }
-.project-showcase-card > .project-img-wrapper {
-  transform: translateZ(26px);
-}
-.project-showcase-card > .project-info {
-  transform: translateZ(34px);
-}
+/* Project cards carry no resting translateZ: their depth comes entirely
+   from the image-only hover in 5b, and the copy never gets a 3D transform
+   at all so its text stays pixel-identical at rest and on hover. */
 .timeline-item > .timeline-content {
   transform: translateZ(30px);
 }
@@ -2139,14 +2133,6 @@ html.intro-done .cinematic-intro {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
-.project-showcase-card {
-  transition: none;
-}
-/* Matched timing so the frame, the thumbnail and the copy move as one
-   gesture instead of three separate ones. */
-.project-showcase-card .project-info {
-  transition: transform 0.35s ease;
-}
 .project-img-wrapper::after {
   content: '';
   position: absolute;
@@ -2164,21 +2150,53 @@ html.intro-done .cinematic-intro {
   z-index: 2;
 }
 
-/* Remove conflicting project card hover rules */
-.project-showcase-card {
-  transition: none;
-}
-.project-showcase-card:hover {
-  transform: none;
-  border-color: var(--border-color);
-  box-shadow: none;
-}
-.project-showcase-card:hover .project-img-wrapper {
-  transform: perspective(1000px) translateZ(30px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-}
+/* Nothing about the card itself ever moves: no rotation, no lift, no whole-
+   card transform, and nothing is written to .project-info on hover (the old
+   per-card transform engine in script.js already skips project cards). */
+.project-showcase-card,
+.project-showcase-card:hover,
 .project-showcase-card:hover .project-info {
   transform: none;
+  transition: none;
+}
+
+/* ---------------------------------------------------------------------
+   5b. PROJECT IMAGE HOVER — forward depth, image only
+   One rule, keyed to the image frame itself (never the card), so hovering
+   the title, the feature list or the pills cannot trigger it: the gesture
+   is bound to the element the pointer is actually over.
+   - perspective() sits on the frame's own transform so the camera exists
+     only while it is hovered; the card carries no perspective at rest and
+     the resting layout is pixel-identical.
+   - translateZ() drives the frame toward the viewer, and the gentle scale
+     keeps that travel legible in browsers whose flat perspective makes a
+     30px push look like nothing. Combined this is a restrained ~8% growth.
+   - The frame's own box-shadow replaces its resting one rather than adding
+     to it, so the cast shadow deepens with the travel instead of stacking.
+   - The image inside gets no transform at all: it stays in its plane, so
+     the dashboard is never rescaled, re-cropped or faded. Text is not a
+     descendant of the frame, so it never moves, hides or blurs.
+   - Nothing here is clipped: the frame grows inside the card's padding and
+     neither the card nor the grid sets overflow on the image column. The
+     frame keeps its own overflow only to round the image corners.
+   --------------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  .project-img-wrapper {
+    will-change: transform;
+  }
+  .project-img-wrapper:hover {
+    transform: perspective(1000px) translateZ(30px) scale(1.03);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.62);
+  }
+}
+/* Reset on leave is automatic (:hover stops matching) and the transition
+   above plays the same curve in reverse, so the frame settles back to
+   rest instead of snapping. */
+@media (prefers-reduced-motion: reduce) {
+  .project-img-wrapper,
+  .project-img-wrapper:hover {
+    transform: none !important;
+  }
 }
 
 /* ---------------------------------------------------------------------
