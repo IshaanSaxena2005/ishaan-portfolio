@@ -817,37 +817,62 @@ html.intro-done .cinematic-intro {
   gap: 4rem;
   padding: 100px 8%;
 }
+/* Portrait frame — one clean outer card with a single circular portrait
+   inside it (matches about.png): rounded-rect glass card, indigo ambient
+   glow behind the head, thin violet ring around the photo. There is no
+   second/nested frame anywhere. */
 .about-img {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 50%;
-  padding: 0;
-  overflow: hidden;
-  border: 3px solid #8A2BE2;
-  background: var(--bg-elevated);
   width: 100%;
-  max-width: 420px;
-  aspect-ratio: 1/1;
-  box-shadow: 0 0 40px rgba(138, 43, 226, 0.5), 0 0 80px rgba(138, 43, 226, 0.3);
-  animation: glow-pulse 2s ease-in-out infinite;
+  max-width: 640px;
+  margin: 0 auto;
+  /* Card is slightly landscape (650 x 480 in the reference), so the circle
+     fills the card height and only leaves the wider side margins. */
+  aspect-ratio: 13 / 9.6;
+  padding: clamp(16px, 4.4%, 26px);
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 50% 46%, rgba(64, 92, 214, 0.30) 0%, rgba(46, 56, 150, 0.12) 46%, rgba(0, 0, 0, 0) 74%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0) 46%),
+    #0b0b11;
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.55);
+}
+.about-photo-ring {
+  position: relative;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  border: 2px solid rgba(168, 85, 247, 0.85);
+  box-shadow:
+    0 0 22px rgba(168, 85, 247, 0.40),
+    0 0 60px rgba(96, 88, 220, 0.25),
+    inset 0 0 18px rgba(0, 0, 0, 0.45);
+  transition: box-shadow 0.4s ease, transform 0.4s var(--surface-ease, ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .about-img:hover .about-photo-ring {
+    box-shadow:
+      0 0 30px rgba(168, 85, 247, 0.55),
+      0 0 80px rgba(96, 88, 220, 0.32),
+      inset 0 0 18px rgba(0, 0, 0, 0.45);
+  }
 }
 .About-photo {
+  display: block;
   width: 100%;
   height: 100%;
   border-radius: 50%;
+  /* Square source (500x500 LinkedIn photo) in a square ring: cover crops
+     nothing of the face, only the transparent corners. */
   object-fit: cover;
-  object-position: center top;
+  object-position: center;
   border: none;
   filter: none;
-}
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 40px rgba(138, 43, 226, 0.5), 0 0 80px rgba(138, 43, 226, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 60px rgba(138, 43, 226, 0.7), 0 0 100px rgba(138, 43, 226, 0.4);
-  }
 }
 .about-text h2 {
   font-size: 36px;
@@ -1904,9 +1929,10 @@ html.intro-done .cinematic-intro {
 .edu-item > .edu-card {
   transform: translateZ(30px);
 }
-.about-img > .About-photo {
-  transform: translateZ(24px);
-}
+/* The About portrait no longer carries a raised layer: its card clips and
+   flattens its own 3D context (overflow: hidden), so a translateZ on the
+   photo could never render. The depth cue there comes from the card's own
+   shadow and the ring glow instead. */
 
 /* Smooth, consistent response for every raised layer. Project cards are
    absent here: their layers are timed with the rest of their own gesture in
@@ -1927,9 +1953,6 @@ html.intro-done .cinematic-intro {
   }
   /* Project cards get no depth rule here: their whole hover is defined in
      one place (section 5) so there is no second source of movement. */
-  .about-img:hover > .About-photo {
-    transform: translateZ(38px);
-  }
 }
 
 /* ---------------------------------------------------------------------
@@ -2248,13 +2271,6 @@ html.intro-done .cinematic-intro {
     radial-gradient(ellipse 44% 36% at 90% 100%, rgba(124, 58, 237, 0.08) 0%, rgba(124, 58, 237, 0) 72%);
 }
 
-.About-photo {
-  box-shadow:
-    0 0 0 1px rgba(192, 132, 252, 0.22),
-    0 18px 34px -18px rgba(0, 0, 0, 0.9),
-    0 0 26px -6px rgba(168, 85, 247, 0.45);
-}
-
 /* ---------------------------------------------------------------------
    10. CONTACT FORM — inset fields, lit focus state
    --------------------------------------------------------------------- */
@@ -2319,12 +2335,6 @@ html.intro-done .cinematic-intro {
 }
 .cert-header h3 {
   overflow-wrap: anywhere;
-}
-.About-photo {
-  width: 100%;
-  height: 100%;
-  max-width: 380px;
-  aspect-ratio: 1 / 1;
 }
 
 /* Touch / narrow layouts: the project links live inside a hover-only
