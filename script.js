@@ -540,7 +540,8 @@
    * STAGE 4 — PARTICLE DISSOLUTION (replaces the old travel/landing hand-off).
    * The complete final composition — settled title + settled intro portrait —
    * is painted into an offscreen source canvas: letters re-drawn with the
-   * same font/slots/chrome-gradient/purple glow, the portrait bitmap stamped
+   * same font/slots/white-fill/purple glow as they appear on screen, the
+   * portrait bitmap stamped
    * with its two CSS masks replicated, so the replica is pixel-identical. The
    * DOM layers are hidden in the very frame the replica first shows (no
    * flash), then a radial wave progressively breaks the whole composition
@@ -573,8 +574,11 @@
       const sctx = snap.getContext('2d');
       if (!sctx) return null;
 
-      // Title: each settled glyph, same Cinzel 700 metrics and chrome gradient
-      // as the DOM letters, plus the purple glow layers baked into the pixels.
+      // Title: each settled glyph, same Cinzel 700 metrics as the DOM letters.
+      // The DOM letters read WHITE on screen (their white front-face shadows
+      // wash over the chrome gradient), so the replica paints them white with
+      // the same purple glow — otherwise the title visibly turns blue the
+      // moment the break-up canvas replaces the DOM.
       sctx.save();
       sctx.textAlign = 'center';
       sctx.textBaseline = 'middle';
@@ -587,12 +591,9 @@
         if (!r.width) continue;
         const fs = parseFloat(el.style.fontSize) || r.height;
         sctx.font = `700 ${fs}px Cinzel, serif`;
-        const g = sctx.createLinearGradient(0, r.top, 0, r.bottom);
-        [
-          [0, '#3a3a4a'], [0.15, '#1a1a2e'], [0.3, '#252535'], [0.5, '#1a1a2e'],
-          [0.7, '#252535'], [0.85, '#1a1a2e'], [1, '#3a3a4a'],
-        ].forEach(([o, c]) => g.addColorStop(o, c));
-        sctx.fillStyle = g;
+        // White body with the faint cool edge the chrome gave it — reads
+        // white, matches the DOM title's on-screen look block for block.
+        sctx.fillStyle = '#f8f6ff';
         sctx.fillText(ch, r.left + r.width / 2, r.top + r.height / 2);
       }
       sctx.restore();
