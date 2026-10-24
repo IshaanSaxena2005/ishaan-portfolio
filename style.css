@@ -1371,9 +1371,14 @@ html.intro-done .cinematic-intro {
 .frame-devproof .project-img {
   position: absolute;
   left: -9%;
-  top: -9%;
+  /* height/top: the bitmap's dashboard ends ~88.5% of its own height
+     (baked margin below), so 118% left a ~5% flat band at the frame's
+     bottom edge. 125% with the window held at top:-10% maps the board's
+     own bottom to the frame's bottom edge (top content trim < 1%) while
+     the x window stays exactly where 118% had it. */
+  top: -10%;
   width: 118%;
-  height: 118%;
+  height: 125%;
   object-fit: cover;
   object-position: center;
 }
