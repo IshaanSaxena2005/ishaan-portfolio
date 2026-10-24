@@ -741,7 +741,13 @@ html.intro-done .cinematic-intro {
   justify-content: space-between;
   align-items: center;
   min-height: 100vh;
-  padding: 80px 0 0 clamp(40px, 6.5vw, 110px);
+  /* Bounded hero composition: at huge viewports (real 4K/ultra-wide, or heavy
+     browser zoom-out) the text and the portrait must stay a miniature of the
+     design window, not sprawl to the viewport's opposite edges (dead centre).
+     The max() clamps to the normal inset until the design width is exceeded,
+     then bounds the composition to the central 2200px — full-bleed
+     background untouched, portrait and layout otherwise unchanged. */
+  padding: 80px 0 0 max(clamp(40px, 6.5vw, 110px), calc((100% - 2200px) / 2));
   position: relative;
   background: #080808 !important;
   overflow: hidden;
@@ -902,7 +908,9 @@ html.intro-done .cinematic-intro {
 /* Integrated Monochrome Portrait - Matches reference.png */
 .home-photo {
   position: absolute;
-  right: 0;
+  /* Bounded with the hero composition (same 2200px design window) — anchored
+     to the design window's right edge instead of the viewport's. */
+  right: max(0px, calc((100% - 2200px) / 2));
   bottom: 0;
   top: 70px;
   width: 58vw;
