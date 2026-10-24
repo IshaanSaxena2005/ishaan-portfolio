@@ -1384,8 +1384,8 @@ html.intro-done .cinematic-intro {
    around a short 16:9 frame floating mid-row. SpendWise looks filled because
    its wrapper stretches to the full grid row. So the frame now drops its own
    ratio on wide screens and stretches identically (`height:100%`,
-   `min-height:450px` from the shared rule). The bitmap is then enlarged 118%
-   as a centered absolute child, `cover`-filled: with the taller frame the
+   `min-height:450px` from the shared rule). The bitmap is then enlarged
+   ~124% as a centered absolute child, `cover`-filled: with the taller frame the
    visible height fraction (494/583 = 84.7%) lands exactly on the dashboard's
    own bitmap span, so it reaches the frame's top and bottom edges, while the
    wrapper's overflow:hidden trims the monitor's backdrop on the sides.
@@ -1397,18 +1397,24 @@ html.intro-done .cinematic-intro {
 /* On stacked/narrow screens the frame must keep the 16:9 ratio: a stretched
    full-height frame in a single text-below column would cover-crop ~2/3 of
    the dashboard's width (the shared `height:100%` resolves against the
-   text-driven row). Re-own the ratio here, and the 118% enlargement above
+   text-driven row). Re-own the ratio here, and the enlargement above
    continues to trim the bitmap's baked-in backdrop band. */
 .frame-devproof .project-img {
   position: absolute;
-  left: -9%;
   /* height/top: the bitmap's dashboard ends ~88.5% of its own height
-     (baked margin below), so 118% left a ~5% flat band at the frame's
-     bottom edge. 125% with the window held at top:-10% maps the board's
-     own bottom to the frame's bottom edge (top content trim < 1%) while
-     the x window stays exactly where 118% had it. */
+     (baked margin below), so 125% with the window held at top:-10% maps the
+     board's own bottom to the frame's bottom edge (top content trim < 1%)
+     while the x window stays where 118% had it.
+     width/left: 124% with left:-13.5% pushes the bitmap's baked laptop
+     bezels (dashboard spans ~9.5%..93.3% of the bitmap width) fully outside
+     the frame on every layout. At wide strips cover shows the bitmap's full
+     width, so without this the left bezel peeked in as a ~2% dark column
+     with a dark top-left corner — the "gap" seen at heavy zoom-out. The
+     frame's left edge now maps to bitmap x ~11% (inside the board) and the
+     right edge to ~91.5% (still inside the board) at any frame ratio. */
+  left: -13.5%;
   top: -10%;
-  width: 118%;
+  width: 124%;
   height: 125%;
   object-fit: cover;
   object-position: center;
