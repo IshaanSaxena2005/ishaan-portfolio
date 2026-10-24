@@ -24,10 +24,6 @@ Check out the live demo: [https://ishaansaxena-portfolio.onrender.com/)
 
 ![Skill Screenshot](screenshots/skills.png)
 
-### Projects
-
-![Projects Screenshot](screenshots/projects.png)
-
 ---
 
 ## 💫 About Me
