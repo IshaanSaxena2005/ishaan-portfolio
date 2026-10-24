@@ -501,10 +501,11 @@ html.intro-done .cinematic-intro {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  /* Static fallback (target palette): what you see if the video never paints
-     (autoplay blocked, decode failure, or prefers-reduced-motion). */
+  /* Static neutral charcoal fallback (hero theme, near rgb(8,8,8)): what you
+     see if the video never paints (autoplay blocked, decode failure, or
+     prefers-reduced-motion). */
   background:
-    radial-gradient(ellipse 90% 70% at 50% 25%, #101629 0%, #0B0D16 55%, #06070C 100%);
+    radial-gradient(ellipse 90% 70% at 50% 25%, #121215 0%, #0A0A0E 55%, #060608 100%);
 }
 .site-video-bg__video {
   position: absolute;
@@ -513,14 +514,18 @@ html.intro-done .cinematic-intro {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* The footage is a very dark blue light-study, so it needs a lift before
-     the veil goes on — but staying short of the earlier over-bright look. */
-  filter: saturate(0.65) brightness(0.72) contrast(1.0);
+  /* HERO THEME: the hero is near-black monochrome (B&W portrait, charcoal
+     rgb(8,8,8)), so the site's footage now sits on the same stage: fully
+     grayscale and dimmed — same stage everywhere, no color tint zones. */
+  filter: grayscale(1) brightness(0.6) contrast(1.02);
   opacity: 1;
 }
 /* Very subtle dark-navy tint (palette #17233D) under screen blending: adds a
    faint atmospheric highlight over the desaturated footage only — the dimmed
    video now supplies its own subdued movement and this barely raises it. */
+/* Neutral charcoal tint under screen blending (hero theme): the wash that
+   used to be dark-navy is now pure neutral gray — the desaturated footage
+   supplies its own subdued movement and this only lifts it a touch. */
 .site-video-bg::before {
   content: '';
   position: absolute;
@@ -528,7 +533,7 @@ html.intro-done .cinematic-intro {
   z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 85% 72% at 50% 34%, rgba(23, 35, 61, 0.14) 0%, rgba(11, 13, 22, 0.06) 55%, rgba(4, 5, 9, 0.03) 100%),
+    radial-gradient(ellipse 85% 72% at 50% 34%, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.02) 55%, rgba(255, 255, 255, 0) 100%),
     linear-gradient(180deg, rgba(11, 13, 22, 0.06) 0%, rgba(4, 5, 9, 0.02) 100%);
   mix-blend-mode: screen;
 }
@@ -543,7 +548,7 @@ html.intro-done .cinematic-intro {
   pointer-events: none;
   background:
     linear-gradient(180deg, rgba(8, 9, 13, 0.55) 0%, rgba(11, 13, 22, 0.32) 40%, rgba(5, 6, 10, 0.65) 100%),
-    radial-gradient(ellipse 90% 74% at 50% 40%, rgba(16, 22, 41, 0.10) 0%, rgba(4, 5, 9, 0.52) 100%);
+    radial-gradient(ellipse 90% 74% at 50% 40%, rgba(12, 12, 14, 0.12) 0%, rgba(4, 5, 9, 0.52) 100%);
 }
 @media (prefers-reduced-motion: reduce) {
   /* Motion is not allowed: keep the static dark fallback only. */
@@ -968,8 +973,9 @@ html.intro-done .cinematic-intro {
   border-radius: 28px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Hero theme: the card's old blue radial glow is neutral charcoal now. */
   background:
-    radial-gradient(circle at 50% 46%, rgba(64, 92, 214, 0.30) 0%, rgba(46, 56, 150, 0.12) 46%, rgba(0, 0, 0, 0) 74%),
+    radial-gradient(circle at 50% 46%, rgba(58, 58, 66, 0.26) 0%, rgba(28, 28, 34, 0.10) 46%, rgba(0, 0, 0, 0) 74%),
     linear-gradient(160deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0) 46%),
     #0b0b11;
   box-shadow: 0 26px 60px rgba(0, 0, 0, 0.55);
@@ -1004,7 +1010,9 @@ html.intro-done .cinematic-intro {
   object-fit: cover;
   object-position: center;
   border: none;
-  filter: none;
+  /* Hero theme: the hero stage is black-and-white, so every portrait in the
+     site reads the same — this one joins the hero portrait in grayscale. */
+  filter: grayscale(1) brightness(0.99) contrast(1.03);
 }
 .about-text h2 {
   font-size: 36px;
