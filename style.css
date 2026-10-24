@@ -1314,14 +1314,17 @@ html.intro-done .cinematic-intro {
   background: #151515;
   border-radius: 12px;
 }
-/* Per-asset image fitting — not every source has the same shape.
-   devproof.png is 1672x941 (16:9). Left to the default `contain` inside a
-   frame that stretched to the text column's height, it letterboxed to the
-   top and left a ~225px dead band below. `contain` alone would fit the width
-   but still leave a band, so this one frame is sized by its own ratio
-   instead of the column height, and `cover` then fills it exactly.
-   min-height must be released (the shared rule sets 450px) and the height
-   must be `auto`: with height:100% the ratio is ignored, the frame keeps the
+/* spendwise-pro.png is the new full-bleed 1448x1086 (4:3) artwork: its dark
+   backdrop runs to every edge, with no UI at any border. In the row-height
+   frame the shared `contain` + `center top` only reached ~92% of the height,
+   leaving a dead #151515 band at the frame's bottom (the old square bitmap
+   had filled the frame exactly — that band is what "changed" after the image
+   update). `cover` from the center restores the filled edge-to-edge frame
+   again: the ~7% width crop lands only on the bitmap's own bare backdrop. */
+.frame-spendwise .project-img {
+  object-fit: cover;
+  object-position: center;
+}
 /* Per-asset image fitting — not every source has the same shape.
    devproof.png is 1672x941 (16:9). Left to the default `contain` inside a
    frame that stretched to the text column's height, it letterboxed to the
