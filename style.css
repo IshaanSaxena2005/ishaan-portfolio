@@ -668,14 +668,18 @@ html.intro-done .cinematic-intro {
   padding: 0 60px;
   border-bottom: 1px solid var(--border-color);
 }
+/* Old-portfolio navbar entrance — plays once, but only AFTER the intro
+   overlay has fully disappeared (html.intro-done), so the logo and links
+   slide in visibly instead of animating behind the intro. While
+   intro-pending the elements hold opacity 0 behind the opaque overlay, so
+   the class hand-off never flashes them. If JS ever fails, neither class
+   applies and the bar stays statically visible (never stuck invisible). */
 .logo {
   font-size: 28px;
   font-weight: 600;
   color: var(--text-primary);
   text-decoration: none;
   cursor: default;
-  opacity: 0;
-  animation: slideRight 1s ease forwards;
   letter-spacing: -0.5px;
 }
 .navbar a {
@@ -686,10 +690,26 @@ html.intro-done .cinematic-intro {
   font-size: 15px;
   text-decoration: none;
   transition: 0.3s ease;
+  letter-spacing: 0.3px;
+}
+html.intro-pending .logo,
+html.intro-pending .navbar a,
+html.intro-pending .home-content h3,
+html.intro-pending .home-content h1,
+html.intro-pending .home-content p,
+html.intro-pending .home-buttons,
+html.intro-pending .home-sci a {
+  opacity: 0;
+}
+html.intro-done .logo {
+  opacity: 0;
+  animation: slideRight 1s ease forwards;
+}
+html.intro-done .navbar a {
   opacity: 0;
   animation: slideTop 0.5s ease forwards;
-  animation-delay: calc(0.1s * var(--i));
-  letter-spacing: 0.3px;
+  /* One link every 0.2s, rising from below — the old sheet's stagger. */
+  animation-delay: calc(0.2s * var(--i));
 }
 .navbar a:hover, .navbar a.active {
   color: var(--accent-purple);
@@ -770,8 +790,6 @@ html.intro-done .cinematic-intro {
   letter-spacing: 3.5px;
   text-transform: uppercase;
   margin-bottom: 18px;
-  opacity: 0;
-  animation: slideBottom 1s ease forwards 0.7s;
 }
 
 .home-content h1 {
@@ -782,13 +800,10 @@ html.intro-done .cinematic-intro {
   letter-spacing: -2px;
   color: #FFFFFF;
   white-space: nowrap;
-  opacity: 0;
-  animation: slideRight 1s ease forwards 1s;
 }
 
 .home-content h3:nth-of-type(2) {
   margin-bottom: 24px;
-  animation: slideTop 1s ease forwards 0.7s;
   font-size: 22px;
   color: #F5F5F5;
   text-transform: none;
@@ -813,8 +828,6 @@ html.intro-done .cinematic-intro {
   line-height: 1.76;
   color: var(--text-secondary);
   margin-bottom: 34px;
-  opacity: 0;
-  animation: slideLeft 1s ease forwards 1s;
   max-width: 530px;
 }
 
@@ -823,8 +836,53 @@ html.intro-done .cinematic-intro {
   align-items: center;
   gap: 16px;
   margin-bottom: 34px;
+}
+
+/* Hero text entrance — the old portfolio's slide set, replayed once the
+   intro overlay is gone (html.intro-done) and the hero is actually on
+   screen. A coordinated sequence instead of everything at once: greeting
+   slides down, name from the left, role up from below, description from the
+   right, then the social icons one after another (their own 0.15s stagger
+   via --i, anchored at 1.05s so they follow the paragraph). */
+html.intro-done .home-content h3 {
   opacity: 0;
-  animation: slideLeft 1s ease forwards 1.2s;
+  animation: slideBottom 1s ease forwards 0.15s;
+}
+html.intro-done .home-content h1 {
+  opacity: 0;
+  animation: slideRight 1s ease forwards 0.4s;
+}
+html.intro-done .home-content h3:nth-of-type(2) {
+  animation: slideTop 1s ease forwards 0.75s;
+}
+html.intro-done .home-content p {
+  opacity: 0;
+  animation: slideLeft 1s ease forwards 0.95s;
+}
+html.intro-done .home-buttons {
+  opacity: 0;
+  animation: slideLeft 1s ease forwards 1.15s;
+}
+html.intro-done .home-sci a {
+  opacity: 0;
+  animation: slideLeft 1s ease forwards;
+  animation-delay: calc(1.05s + (var(--i) - 8) * 0.15s);
+}
+/* Interrupted or visits after the animations are gone: never leave the
+   entrance-locked elements invisible (reduced motion included). */
+@media (prefers-reduced-motion: reduce) {
+  html.intro-done .logo,
+  html.intro-done .navbar a,
+  html.intro-done .home-content h3,
+  html.intro-done .home-content h1,
+  html.intro-done .home-content h3:nth-of-type(2),
+  html.intro-done .home-content p,
+  html.intro-done .home-buttons,
+  html.intro-done .home-sci a {
+    opacity: 1 !important;
+    animation: none !important;
+    transform: none !important;
+  }
 }
 
 .btn-primary {
@@ -891,9 +949,6 @@ html.intro-done .cinematic-intro {
   color: #FFFFFF;
   text-decoration: none;
   transition: all 0.3s ease;
-  opacity: 0;
-  animation: slideLeft 1s ease forwards;
-  animation-delay: calc(0.1s * var(--i));
   margin: 0;
 }
 
@@ -901,7 +956,9 @@ html.intro-done .cinematic-intro {
   background: var(--accent-purple);
   color: #FFFFFF;
   border-color: var(--accent-purple);
-  transform: translateY(-3px);
+  /* !important so the lift still wins while the entrance's forwards fill
+     keeps animating-level priority over normal declarations after it ends. */
+  transform: translateY(-3px) !important;
   box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
 }
 

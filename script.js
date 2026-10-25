@@ -232,6 +232,9 @@
     intro.setAttribute('aria-hidden', 'true');
     lettersRoot.innerHTML = '';
     window.dispatchEvent(new Event('scroll'));
+    // Cue for code that must wait for the reveal (e.g. the hero's delayed
+    // entrance timing hook: typed.js begins once the hero is actually shown).
+    window.dispatchEvent(new CustomEvent('intro:done'));
   }
 
   if (prefersReducedMotion) {
@@ -1029,14 +1032,28 @@
   }
 })();
 
-// Typed.js for Home section
-var typed = new Typed(".text", {
-    strings: ["FullStack Developer", "Data Analyst", "Software Engineer"],
+// Typed.js for Home section — starts as the hero's role line finishes its
+// slide-in (0.75s after the intro overlay is gone), so the typing happens
+// on-screen instead of running invisibly behind the cinematic intro.
+var typed = null;
+function startTyped() {
+  if (typed || typeof window.Typed !== 'function') return;
+  typed = new Typed('.text', {
+    strings: ['FullStack Developer', 'Data Analyst', 'Software Engineer'],
     typeSpeed: 100,
     backSpeed: 60,
     backDelay: 1000,
     loop: true
-});
+  });
+}
+function queueTyped() {
+  setTimeout(startTyped, 750);
+}
+if (document.documentElement.classList.contains('intro-done')) {
+  queueTyped(); // fallback: the intro already finished before this ran
+} else {
+  window.addEventListener('intro:done', queueTyped, { once: true });
+}
 
 // Cursor Glow Effect
 const cursorGlow = document.querySelector('.cursor-glow');
