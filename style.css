@@ -1018,9 +1018,9 @@ html.intro-done .cinematic-intro {
   object-fit: cover;
   object-position: center;
   border: none;
-  /* Hero theme: the hero stage is black-and-white, so every portrait in the
-     site reads the same — this one joins the hero portrait in grayscale. */
-  filter: grayscale(1) brightness(0.99) contrast(1.03);
+  /* Colored portrait: the photo keeps its natural colors instead of the
+     grayscale hero treatment the rest of the stage uses. */
+  filter: none;
 }
 .about-text h2 {
   font-size: 36px;
@@ -1394,6 +1394,15 @@ html.intro-done .cinematic-intro {
    ratio below. `transform: scale` is still avoided so the reduced-motion
    override can't undo the fill. */
 
+/* DevProof now owns the same long 1.05:1 ratio as SpendWise/GigShield in the
+   desktop grid: previously it stayed text-driven (stretching to its own text
+   row), which read as a short wide rectangle beside two tall squares once
+   the layout stops growing. Same sizing pattern as the other two frames;
+   the enlarged absolute bitmap below keeps filling it edge-to-edge. */
+.frame-devproof {
+  aspect-ratio: 1.05 / 1;
+  min-height: 0;
+}
 /* On stacked/narrow screens the frame must keep the 16:9 ratio: a stretched
    full-height frame in a single text-below column would cover-crop ~2/3 of
    the dashboard's width (the shared `height:100%` resolves against the
