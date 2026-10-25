@@ -1402,56 +1402,23 @@ html.intro-done .cinematic-intro {
 .frame-devproof {
   aspect-ratio: 1.05 / 1;
   min-height: 0;
+  background: radial-gradient(circle at center, #131722 0%, #080a0f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-/* On stacked/narrow screens the frame must keep the 16:9 ratio: a stretched
-   full-height frame in a single text-below column would cover-crop ~2/3 of
-   the dashboard's width (the shared `height:100%` resolves against the
-   text-driven row). Re-own the ratio here, and the enlargement above
-   continues to trim the bitmap's baked-in backdrop band. */
 .frame-devproof .project-img {
-  position: absolute;
-  /* height/top: the bitmap's dashboard ends ~88.5% of its own height
-     (baked margin below), so 125% with the window held at top:-10% maps the
-     board's own bottom to the frame's bottom edge (top content trim < 1%)
-     while the x window stays where 118% had it.
-     width/left: 124% with left:-13.5% pushes the bitmap's baked laptop
-     bezels (dashboard spans ~9.5%..93.3% of the bitmap width) fully outside
-     the frame on every layout. At wide strips cover shows the bitmap's full
-     width, so without this the left bezel peeked in as a ~2% dark column
-     with a dark top-left corner — the "gap" seen at heavy zoom-out. The
-     frame's left edge now maps to bitmap x ~11% (inside the board) and the
-     right edge to ~91.5% (still inside the board) at any frame ratio. */
-  left: -13.5%;
-  top: -10%;
-  width: 124%;
-  height: 125%;
-  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   object-position: center;
+  border-radius: 8px;
 }
 @media (max-width: 1024px) {
   .frame-devproof {
-    aspect-ratio: 16 / 9;
+    aspect-ratio: auto;
     height: auto;
     min-height: 0;
-  }
-}
-/* DevProof card boundary: DevProof's text column is the tallest of the three
-   (3-line title, long description, 10 pills), and the shared card sets
-   `padding: 0` — its title, paragraph and tag rows ran flush against the
-   card's top, right and bottom edges, reading as if they spill past the
-   boundary. The surface pseudo-element reaches the full card box already,
-   so real padding (not overflow hiding) restores a true inset on this card
-   only; SpendWise and GigShield are untouched. */
-.project-showcase-card:has(> .frame-devproof) {
-  padding: 34px 44px;
-  gap: 36px;
-}
-/* Phone layout: 44px card padding would eat a third of a ~344px column and
-   shrink the frame to an unusable ~255px strip — halve the inset here. */
-@media (max-width: 768px) {
-  .project-showcase-card:has(> .frame-devproof) {
-    padding: 20px;
-    gap: 24px;
   }
 }
 /* gig.png is a 1024x1024 export whose dashboard only occupies the central
