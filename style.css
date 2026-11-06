@@ -1414,6 +1414,10 @@ html.intro-done .home-sci a {
   z-index: 1;
   object-fit: contain;
   object-position: center;
+  /* The shared rule paints a #151515 plate behind every project image. Here
+     that plate covers the whole <img> box — letterbox bands included — and
+     would hide the backdrop layer, so it goes transparent. */
+  background: transparent;
 }
 /* Ambient backdrop for the letterbox bands above/below the screenshot: a
    blurred, dimmed copy of the same bitmap instead of a flat card colour, so
