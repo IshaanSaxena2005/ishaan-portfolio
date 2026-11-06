@@ -1443,45 +1443,22 @@ html.intro-done .home-sci a {
     display: none;
   }
 }
-/* Huge viewports (real ultra-wide/4K screens, or heavy browser zoom-out):
-   the fixed 1.05 frames keep growing with the viewport while the px-sized
-   text stays put, so the photos looked gigantic next to shrunken copy.
-   From here up the ratio is released and the frame takes the text-driven
-   strip height DevProof's frame already has — all three cards then share
-   the same wide-banner proportions at any huge width. (Not `max-height`:
-   paired with `aspect-ratio` that would collapse the grid column's
-   min-content width to the capped frame's width and squeeze the card.) */
-/* Per-asset image fitting — not every source has the same shape.
-   devproof.png is 1672x941 (16:9). Left to the default `contain` inside a
-   frame that stretched to the text column's height, it letterboxed to the
-   top and left a ~225px dead band below. `contain` alone would fit the width
-   but still leave a band, so this one frame is sized by its own ratio
-   instead of the column height, and `cover` then fills it exactly.
-   min-height must be released (the shared rule sets 450px) and the height
-   must be `auto`: with height:100% the ratio is ignored, the frame keeps the
-   548px column height and computes to ~975px wide inside a 572px cell, which
-   overflowed and clipped the "Top Repositories" panel. Measured crop at rest
-   is now 0.05%.
-   SPENDWISE-MATCHED GEOMETRY (root cause of the "empty space" reports): the
-   visible empty strips above/below the dashboard were the CARD's surface
-   around a short 16:9 frame floating mid-row. SpendWise looks filled because
-   its wrapper stretches to the full grid row. So the frame now drops its own
-   ratio on wide screens and stretches identically (`height:100%`,
-   `min-height:450px` from the shared rule). The bitmap is then enlarged
-   ~124% as a centered absolute child, `cover`-filled: with the taller frame the
-   visible height fraction (494/583 = 84.7%) lands exactly on the dashboard's
-   own bitmap span, so it reaches the frame's top and bottom edges, while the
-   wrapper's overflow:hidden trims the monitor's backdrop on the sides.
-   Absolute positioning is safe against collapse on desktop (the frame always
-   has a resolved height from the row), while narrow screens re-apply the
-   ratio below. `transform: scale` is still avoided so the reduced-motion
-   override can't undo the fill. */
+/* Wide viewports: .projects-container caps the layout at 2100px, so the fixed
+   1.05:1 frames stop growing there and never inflate into giant squares next
+   to the px-sized copy on ultra-wide screens or at heavy browser zoom-out. */
 
-/* DevProof now owns the same long 1.05:1 ratio as SpendWise/GigShield in the
-   desktop grid: previously it stayed text-driven (stretching to its own text
-   row), which read as a short wide rectangle beside two tall squares once
-   the layout stops growing. Same sizing pattern as the other two frames;
-   the enlarged absolute bitmap below keeps filling it edge-to-edge. */
+/* Per-asset image fitting — the captures do not share a shape, so each frame
+   is sized to fit its own bitmap without distortion or a dead band:
+   - spendwise-pro.png (1448x1086, 4:3): 1.05:1 frame, `contain` plus the
+     blurred backdrop above, so the whole dashboard stays visible.
+   - devproof.png (1672x941, 16:9): 1.05:1 frame, `contain` over the dark
+     radial backdrop below, so the wide capture centres without being cropped
+     or stretched.
+   - gig.png (1024x1024, a JPEG despite the extension): `cover` fills the same
+     frame, cropping only a sliver of the empty padding baked around its
+     dashboard.
+   Every frame releases the shared 450px min-height and, below 1024px, falls
+   back to the image's natural height so stacked cards show no empty band. */
 .frame-devproof {
   aspect-ratio: 1.05 / 1;
   min-height: 0;
