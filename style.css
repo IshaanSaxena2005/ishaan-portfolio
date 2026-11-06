@@ -1394,20 +1394,20 @@ html.intro-done .home-sci a {
   background: #151515;
   border-radius: 12px;
 }
-/* DevProof-matched geometry (the "too short frame" round): like DevProof's
-   picture, the frame drops its 16:9 shape mid-row and holds near-square
-   1.05:1 — stretching to its column's height budget, so the card reads long
-   the same way DevProof's does. `cover` from the center fills it edge to
-   edge: the side crop lands on the bitmap's bare backdrop and only the outer
-   slivers of the decorative floating panels; the whole dashboard panel
-   matrix stays in view. Stacked/narrow screens re-own the natural height
-   (the image's own ratio-inherited height) like DevProof's ≤1024 fix. */
+/* SpendWise frame geometry: the card keeps the shared 1.05:1 desktop frame
+   (and the image's natural height below 1024px) so the three projects still
+   read as one row, but the 1448x1086 capture is now laid in whole.
+   `cover` scaled that 4:3 bitmap by the frame's height and trimmed ~21% of
+   its width — roughly 77px off each side — which ate into the dashboard's
+   outer panels. `contain` instead zooms the screenshot out until it fits the
+   frame's width, so every panel stays visible; the bands it leaves above and
+   below are dressed by the backdrop in the next rule. */
 .frame-spendwise {
   aspect-ratio: 1.05 / 1;
   min-height: 0;
 }
 .frame-spendwise .project-img {
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 @media (max-width: 1024px) {
