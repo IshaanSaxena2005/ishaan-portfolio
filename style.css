@@ -1403,12 +1403,32 @@ html.intro-done .home-sci a {
    frame's width, so every panel stays visible; the bands it leaves above and
    below are dressed by the backdrop in the next rule. */
 .frame-spendwise {
+  position: relative;
+  isolation: isolate;
   aspect-ratio: 1.05 / 1;
   min-height: 0;
+  background: #050b12;
 }
 .frame-spendwise .project-img {
+  position: relative;
+  z-index: 1;
   object-fit: contain;
   object-position: center;
+}
+/* Ambient backdrop for the letterbox bands above/below the screenshot: a
+   blurred, dimmed copy of the same bitmap instead of a flat card colour, so
+   the frame still reads as one full-bleed picture while the capture itself
+   stays uncropped. The negative inset keeps the blur's soft edge outside the
+   wrapper's overflow clip (no pale rim at the corners), and the same URL as
+   the <img> means it costs no second download. */
+.frame-spendwise::before {
+  content: "";
+  position: absolute;
+  inset: -24px;
+  background: url("spendwise-pro.png") center / cover no-repeat;
+  filter: blur(26px) brightness(0.42) saturate(1.1);
+  z-index: 0;
+  pointer-events: none;
 }
 @media (max-width: 1024px) {
   .frame-spendwise {
