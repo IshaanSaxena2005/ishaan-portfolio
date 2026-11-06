@@ -1436,6 +1436,12 @@ html.intro-done .home-sci a {
     height: auto;
     min-height: 0;
   }
+  /* Stacked layout: the frame collapses onto the image's own height, so
+     `contain` already fills it edge to edge and the backdrop has nothing left
+     to cover. Dropping it also retires a large blur layer on phones. */
+  .frame-spendwise::before {
+    display: none;
+  }
 }
 /* Huge viewports (real ultra-wide/4K screens, or heavy browser zoom-out):
    the fixed 1.05 frames keep growing with the viewport while the px-sized
